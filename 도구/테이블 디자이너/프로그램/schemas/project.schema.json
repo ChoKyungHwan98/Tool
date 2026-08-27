@@ -1,0 +1,134 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://game-schema-workbench.local/schemas/project.schema.json",
+  "title": "Game Schema Workbench Document",
+  "type": "object",
+  "required": [
+    "formatVersion",
+    "revision",
+    "schema",
+    "rowsByTable",
+    "migrationState",
+    "auditLog"
+  ],
+  "properties": {
+    "formatVersion": { "type": "integer", "minimum": 1 },
+    "revision": { "type": "integer", "minimum": 0 },
+    "schema": { "$ref": "#/$defs/schemaProject" },
+    "rowsByTable": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "items": { "$ref": "#/$defs/dataRow" }
+      }
+    },
+    "migrationState": {
+      "type": "object",
+      "required": ["pending", "unresolvedRows"],
+      "properties": {
+        "pending": { "type": "array" },
+        "unresolvedRows": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "auditLog": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/auditEvent" }
+    }
+  },
+  "$defs": {
+    "schemaProject": {
+      "type": "object",
+      "required": [
+        "projectId",
+        "name",
+        "schemaVersion",
+        "tables",
+        "enums",
+        "relations",
+        "functionalDependencies",
+        "exportViews",
+        "layout",
+        "commandHistory"
+      ],
+      "properties": {
+        "projectId": { "type": "string", "minLength": 1 },
+        "name": { "type": "string", "minLength": 1 },
+        "schemaVersion": { "type": "string", "minLength": 1 },
+        "tables": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/table" }
+        },
+        "enums": { "type": "array" },
+        "relations": { "type": "array" },
+        "functionalDependencies": { "type": "array" },
+        "exportViews": { "type": "array" },
+        "layout": { "type": "object" },
+        "commandHistory": { "type": "array" }
+      }
+    },
+    "dataRow": {
+      "type": "object",
+      "required": ["rowId", "cells"],
+      "properties": {
+        "rowId": { "type": "string", "minLength": 1 },
+        "cells": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    },
+    "auditEvent": {
+      "type": "object",
+      "required": ["auditEventId", "revision", "type", "createdAt", "summary"],
+      "properties": {
+        "auditEventId": { "type": "string", "minLength": 1 },
+        "revision": { "type": "integer", "minimum": 0 },
+        "type": { "type": "string", "minLength": 1 },
+        "createdAt": { "type": "string" },
+        "summary": { "type": "string" }
+      }
+    },
+    "table": {
+      "type": "object",
+      "required": ["tableId", "name", "columns", "primaryKey"],
+      "properties": {
+        "tableId": { "type": "string" },
+        "name": { "type": "string" },
+        "columns": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/column" }
+        },
+        "primaryKey": {
+          "type": "object",
+          "required": ["columnIds"],
+          "properties": {
+            "columnIds": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "column": {
+      "type": "object",
+      "required": ["columnId", "tableId", "name", "dataType", "nullable"],
+      "properties": {
+        "columnId": { "type": "string" },
+        "tableId": { "type": "string" },
+        "name": { "type": "string" },
+        "dataType": {
+          "type": "object",
+          "required": ["kind"],
+          "properties": {
+            "kind": { "type": "string" }
+          }
+        },
+        "nullable": { "type": "boolean" }
+      }
+    }
+  }
+}

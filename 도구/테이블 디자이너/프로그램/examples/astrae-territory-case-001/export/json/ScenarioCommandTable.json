@@ -1,0 +1,38 @@
+[
+  {
+    "id": 1110001,
+    "caseFlowId": 1040001,
+    "sequence": 1,
+    "commandType": "CHARACTER",
+    "speakerName": null,
+    "text": null,
+    "resourceKey": "MAMIYA_RITSU_STANDING"
+  },
+  {
+    "id": 1110002,
+    "caseFlowId": 1040001,
+    "sequence": 2,
+    "commandType": "DIALOGUE",
+    "speakerName": null,
+    "text": "(미정)",
+    "resourceKey": null
+  },
+  {
+    "id": 1110003,
+    "caseFlowId": 1040003,
+    "sequence": 1,
+    "commandType": "CHARACTER",
+    "speakerName": null,
+    "text": null,
+    "resourceKey": "MAMIYA_RITSU_STANDING"
+  },
+  {
+    "id": 1110004,
+    "caseFlowId": 1040003,
+    "sequence": 2,
+    "commandType": "DIALOGUE",
+    "speakerName": null,
+    "text": "(미정)",
+    "resourceKey": null
+  }
+]

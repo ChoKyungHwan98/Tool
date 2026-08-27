@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://game-schema-workbench.local/schemas/ai-proposal.schema.json",
+  "title": "AI Schema Proposal",
+  "type": "object",
+  "required": [
+    "summary",
+    "assumptions",
+    "clarificationQuestions",
+    "findings",
+    "alternatives",
+    "proposedOperations",
+    "commandDrafts",
+    "migrationPlan",
+    "risks",
+    "affectedEntityIds",
+    "tableIds",
+    "columnIds",
+    "relationIds",
+    "confidence"
+  ],
+  "properties": {
+    "summary": { "type": "string" },
+    "assumptions": { "type": "array", "items": { "type": "string" } },
+    "clarificationQuestions": { "type": "array", "items": { "type": "string" } },
+    "findings": { "type": "array" },
+    "alternatives": { "type": "array", "items": { "type": "string" } },
+    "proposedOperations": { "type": "array", "items": { "type": "string" } },
+    "commandDrafts": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["kind", "name", "columns"],
+            "properties": {
+              "kind": { "const": "create_table" },
+              "name": { "type": "string" },
+              "description": { "type": "string" },
+              "columns": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 64,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["name", "dataType"],
+                  "properties": {
+                    "name": { "type": "string" },
+                    "dataType": { "enum": ["string", "int32", "float", "boolean"] },
+                    "nullable": { "type": "boolean" },
+                    "primaryKey": { "type": "boolean" }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["kind", "viewId", "tableId", "columnId"],
+            "properties": {
+              "kind": { "const": "add_export_column" },
+              "viewId": { "type": "string" },
+              "tableId": { "type": "string" },
+              "columnId": { "type": "string" },
+              "header": { "type": "string" }
+            }
+          }
+        ]
+      }
+    },
+    "migrationPlan": { "type": "array", "items": { "type": "string" } },
+    "risks": { "type": "array", "items": { "type": "string" } },
+    "affectedEntityIds": { "type": "array", "items": { "type": "string" } },
+    "tableIds": { "type": "array", "items": { "type": "string" } },
+    "columnIds": { "type": "array", "items": { "type": "string" } },
+    "relationIds": { "type": "array", "items": { "type": "string" } },
+    "confidence": { "type": "number", "minimum": 0, "maximum": 1 }
+  }
+}

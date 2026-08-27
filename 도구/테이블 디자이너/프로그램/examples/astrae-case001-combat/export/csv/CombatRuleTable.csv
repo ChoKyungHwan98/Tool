@@ -1,0 +1,2 @@
+id,name,maxPartySize,turnStartAp,enemyIntentCount,breakTriggerType,breakEnemyActionReduction,breakGaugeResetTiming
+2010001,CASE_001 공통 전투 규칙,3,3,3,GaugeZero,1,NextTurnStart

@@ -1,0 +1,4 @@
+id,caseFlowId,difficultyType,sortOrder,isImplemented
+1050001,1040002,EASY,1,false
+1050002,1040002,NORMAL,2,true
+1050003,1040002,HARD,3,false

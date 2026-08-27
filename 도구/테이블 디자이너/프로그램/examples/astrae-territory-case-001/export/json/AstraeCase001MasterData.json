@@ -1,0 +1,127 @@
+{
+  "schemaVersion": "9.0.0",
+  "sourceProject": "Astrae-Oratio-CASE001.gsw",
+  "scope": "CASE 콘텐츠 전용. 전투 수치·보스·HFSM 데이터는 포함하지 않는다.",
+  "idPolicy": "모든 테이블은 전역 고유 숫자 id를 첫 열 단일 PK로 사용한다.",
+  "unlockRule": "같은 caseId를 가진 CaseUnlockTable 행을 모두 만족하면 해금한다.",
+  "CaseTable": [
+    {
+      "id": 1010001,
+      "name": "결투재판 효력분쟁",
+      "summaryText": "과거 결투재판으로 종결된 영지분쟁의 효력이 현재의 행정 기반 영지질서에 어디까지 미치는지를 둘러싼 사건.",
+      "issueText": "제4시대부터 이어진 결투재판과 제5시대 이후 성립한 행정 기반 영지질서가 현대에 공존하면서, 과거 판단의 효력을 현재 영지질서가 어디까지 인정할지가 쟁점이다."
+    }
+  ],
+  "CaseUnlockTable": [
+    {
+      "id": 1100001,
+      "caseId": 1010001,
+      "unlockType": "MAIN_STORY_UNLOCK",
+      "requiredCaseId": null
+    }
+  ],
+  "CaseFlowTable": [
+    {
+      "id": 1040001,
+      "caseId": 1010001,
+      "sequence": 1,
+      "flowType": "SCENARIO"
+    },
+    {
+      "id": 1040002,
+      "caseId": 1010001,
+      "sequence": 2,
+      "flowType": "BATTLE"
+    },
+    {
+      "id": 1040003,
+      "caseId": 1010001,
+      "sequence": 3,
+      "flowType": "SCENARIO"
+    }
+  ],
+  "ScenarioCommandTable": [
+    {
+      "id": 1110001,
+      "caseFlowId": 1040001,
+      "sequence": 1,
+      "commandType": "CHARACTER",
+      "speakerName": null,
+      "text": null,
+      "resourceKey": "MAMIYA_RITSU_STANDING"
+    },
+    {
+      "id": 1110002,
+      "caseFlowId": 1040001,
+      "sequence": 2,
+      "commandType": "DIALOGUE",
+      "speakerName": null,
+      "text": "(미정)",
+      "resourceKey": null
+    },
+    {
+      "id": 1110003,
+      "caseFlowId": 1040003,
+      "sequence": 1,
+      "commandType": "CHARACTER",
+      "speakerName": null,
+      "text": null,
+      "resourceKey": "MAMIYA_RITSU_STANDING"
+    },
+    {
+      "id": 1110004,
+      "caseFlowId": 1040003,
+      "sequence": 2,
+      "commandType": "DIALOGUE",
+      "speakerName": null,
+      "text": "(미정)",
+      "resourceKey": null
+    }
+  ],
+  "CaseDifficultyTable": [
+    {
+      "id": 1050001,
+      "caseFlowId": 1040002,
+      "difficultyType": "EASY",
+      "sortOrder": 1,
+      "isImplemented": false
+    },
+    {
+      "id": 1050002,
+      "caseFlowId": 1040002,
+      "difficultyType": "NORMAL",
+      "sortOrder": 2,
+      "isImplemented": true
+    },
+    {
+      "id": 1050003,
+      "caseFlowId": 1040002,
+      "difficultyType": "HARD",
+      "sortOrder": 3,
+      "isImplemented": false
+    }
+  ],
+  "CaseRewardTable": [
+    {
+      "id": 1090001,
+      "caseDifficultyId": 1050001,
+      "rewardType": "CURRENCY",
+      "rewardCode": "GOLD",
+      "amount": 1
+    },
+    {
+      "id": 1090002,
+      "caseDifficultyId": 1050002,
+      "rewardType": "CURRENCY",
+      "rewardCode": "GOLD",
+      "amount": 2
+    },
+    {
+      "id": 1090003,
+      "caseDifficultyId": 1050003,
+      "rewardType": "CURRENCY",
+      "rewardCode": "GOLD",
+      "amount": 3
+    }
+  ]
+}

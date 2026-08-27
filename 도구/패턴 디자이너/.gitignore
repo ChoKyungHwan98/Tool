@@ -1,0 +1,12 @@
+node_modules/
+dist/
+coverage/
+.vite/
+*.log
+src-tauri/target/
+src-tauri/gen/
+.DS_Store
+Thumbs.db
+
+# Licensed Unity Asset Store content. Keep source assets local-only.
+public/local-assets/

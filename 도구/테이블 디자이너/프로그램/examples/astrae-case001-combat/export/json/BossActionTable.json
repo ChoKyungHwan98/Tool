@@ -1,0 +1,35 @@
+[
+  {
+    "id": 2070001,
+    "bossId": 2060001,
+    "name": "마력탄",
+    "telegraphType": "Single",
+    "targetType": "PlayerSingle",
+    "hpDamage": 120,
+    "responseWindowMs": 850,
+    "selectionWeight": 50,
+    "unityActionKey": "BossMagicBolt"
+  },
+  {
+    "id": 2070002,
+    "bossId": 2060001,
+    "name": "연속 마력탄",
+    "telegraphType": "Single",
+    "targetType": "PlayerSingle",
+    "hpDamage": 155,
+    "responseWindowMs": 700,
+    "selectionWeight": 30,
+    "unityActionKey": "BossMagicVolley"
+  },
+  {
+    "id": 2070003,
+    "bossId": 2060001,
+    "name": "광역 마력 폭발",
+    "telegraphType": "Wide",
+    "targetType": "PlayerAll",
+    "hpDamage": 95,
+    "responseWindowMs": 950,
+    "selectionWeight": 20,
+    "unityActionKey": "BossMagicBurst"
+  }
+]

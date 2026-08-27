@@ -1,0 +1,4 @@
+id,bossId,name,telegraphType,targetType,hpDamage,responseWindowMs,selectionWeight,unityActionKey
+2070001,2060001,마력탄,Single,PlayerSingle,120,850,50,BossMagicBolt
+2070002,2060001,연속 마력탄,Single,PlayerSingle,155,700,30,BossMagicVolley
+2070003,2060001,광역 마력 폭발,Wide,PlayerAll,95,950,20,BossMagicBurst

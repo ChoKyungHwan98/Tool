@@ -1,0 +1,20 @@
+{
+  "extends": "@electron-toolkit/tsconfig/tsconfig.web.json",
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "../src/shared/**/*.ts",
+    "../src/main/io/deck-ir-export/pptx.ts",
+    "../src/main/io/deck-ir-export/docx.ts",
+    "../src/main/io/deck-ir-export/report.ts"
+  ],
+  "compilerOptions": {
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "baseUrl": "..",
+    "paths": {
+      "@shared/*": ["src/shared/*"],
+      "@deck-main/*": ["src/main/io/deck-ir-export/*"]
+    }
+  }
+}

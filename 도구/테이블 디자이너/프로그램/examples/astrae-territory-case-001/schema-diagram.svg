@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="760" viewBox="0 0 1500 760">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#17857b"/></marker>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#09142d" flood-opacity="0.16"/></filter>
+  </defs>
+  <rect width="1500" height="760" fill="#f4f7fb"/>
+  <text x="70" y="70" font-family="Arial, sans-serif" font-size="32" font-weight="700" fill="#1a2d5f">CASE_001 콘텐츠 데이터 구조</text>
+  <text x="70" y="106" font-family="Arial, sans-serif" font-size="18" fill="#5e6b85">6개 테이블 · 실제 반복 단위만 1:N 관계로 분리</text>
+  <g stroke="#17857b" stroke-width="4" fill="none" marker-end="url(#arrow)">
+    <path d="M480 235 H360"/><path d="M800 235 H920"/><path d="M1080 325 V405"/>
+    <path d="M920 265 H850 V580 H800"/><path d="M800 605 H1000 V670 H1210"/>
+    <path d="M210 325 V700 H440 V300 H480" stroke-dasharray="10 8"/>
+  </g>
+  <text x="245" y="725" font-family="Arial, sans-serif" font-size="14" fill="#65738c">requiredCaseId · 후속 CASE에서 사용</text>
+  <g font-family="Arial, sans-serif" filter="url(#shadow)">
+    <g transform="translate(60 165)"><rect width="300" height="160" rx="16" fill="#fff" stroke="#b8c4d8"/><rect width="300" height="50" rx="16" fill="#1a2d5f"/><text x="18" y="34" font-size="20" font-weight="700" fill="#fff">CaseUnlockTable</text><text x="18" y="92" font-size="16" fill="#263750">메인 스토리 / 선행 CASE 조건</text><text x="18" y="125" font-size="14" fill="#65738c">같은 caseId의 모든 행 충족</text></g>
+    <g transform="translate(480 165)"><rect width="320" height="160" rx="16" fill="#fff" stroke="#17857b" stroke-width="3"/><rect width="320" height="50" rx="16" fill="#17857b"/><text x="18" y="34" font-size="22" font-weight="700" fill="#fff">CaseTable</text><text x="18" y="92" font-size="16" fill="#263750">이름 · 사건 개요 · 사건 쟁점</text><text x="18" y="125" font-size="14" fill="#65738c">정적 콘텐츠의 시작점</text></g>
+    <g transform="translate(920 165)"><rect width="320" height="160" rx="16" fill="#fff" stroke="#17857b" stroke-width="3"/><rect width="320" height="50" rx="16" fill="#17857b"/><text x="18" y="34" font-size="22" font-weight="700" fill="#fff">CaseFlowTable</text><text x="18" y="92" font-size="16" fill="#263750">SCENARIO → BATTLE → SCENARIO</text><text x="18" y="125" font-size="14" fill="#65738c">sequence 기반 진행 목차</text></g>
+    <g transform="translate(920 405)"><rect width="360" height="150" rx="16" fill="#fff" stroke="#b8c4d8"/><rect width="360" height="50" rx="16" fill="#1a2d5f"/><text x="18" y="34" font-size="20" font-weight="700" fill="#fff">ScenarioCommandTable</text><text x="18" y="92" font-size="16" fill="#263750">배경 · 캐릭터 · 대사 명령</text><text x="18" y="122" font-size="14" fill="#65738c">SCENARIO flow에 직접 연결</text></g>
+    <g transform="translate(480 505)"><rect width="320" height="150" rx="16" fill="#fff" stroke="#b8c4d8"/><rect width="320" height="50" rx="16" fill="#1a2d5f"/><text x="18" y="34" font-size="20" font-weight="700" fill="#fff">CaseDifficultyTable</text><text x="18" y="92" font-size="16" fill="#263750">쉬움 · 보통 · 어려움</text><text x="18" y="122" font-size="14" fill="#65738c">보통만 구현 완료</text></g>
+    <g transform="translate(1210 610)"><rect width="240" height="120" rx="16" fill="#fff" stroke="#b8c4d8"/><rect width="240" height="48" rx="16" fill="#1a2d5f"/><text x="18" y="32" font-size="20" font-weight="700" fill="#fff">CaseRewardTable</text><text x="18" y="84" font-size="15" fill="#263750">난이도별 가보상</text><text x="18" y="108" font-size="13" fill="#a06b00">GOLD 1 · 2 · 3</text></g>
+  </g>
+</svg>

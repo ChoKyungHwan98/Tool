@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://game-schema-workbench.local/schemas/command.schema.json",
+  "title": "Schema Command",
+  "type": "object",
+  "required": ["type", "commandId"],
+  "properties": {
+    "type": {
+      "enum": [
+        "RenameColumn",
+        "ChangeNullable",
+        "AddColumn",
+        "RenameTable",
+        "DeleteColumn",
+        "ChangeColumnType",
+        "CreateTable",
+        "DeleteTable",
+        "ChangePrimaryKey",
+        "AddForeignKey",
+        "DeleteForeignKey",
+        "AddUniqueConstraint",
+        "AddCheckConstraint",
+        "AddFunctionalDependency",
+        "SplitTable",
+        "MergeTable",
+        "ExtractLookupTable",
+        "CreateJunctionTable",
+        "AddSurrogateKey",
+        "BackfillColumn",
+        "CreateExportView",
+        "ModifyExportView"
+      ]
+    },
+    "commandId": { "type": "string", "minLength": 1 },
+    "tableId": { "type": "string" },
+    "columnId": { "type": "string" },
+    "relationId": { "type": "string" },
+    "nextName": { "type": "string" },
+    "previousName": { "type": "string" },
+    "nullable": { "type": "boolean" },
+    "previousNullable": { "type": "boolean" },
+    "approved": { "type": "boolean" },
+    "nextColumnIds": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "previousColumnIds": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "nextDataType": { "type": "object" },
+    "previousDataType": { "type": "object" },
+    "sourceTableId": { "type": "string" },
+    "targetTableId": { "type": "string" },
+    "movedColumnIds": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "table": { "type": "object" },
+    "deletedTable": { "type": "object" },
+    "newTable": { "type": "object" },
+    "lookupTable": { "type": "object" },
+    "previousSourceTable": { "type": "object" },
+    "previousTargetTable": { "type": "object" },
+    "column": { "type": "object" },
+    "deletedColumn": { "type": "object" },
+    "relation": { "type": "object" },
+    "deletedRelation": { "type": "object" },
+    "relations": {
+      "type": "array",
+      "items": { "type": "object" }
+    },
+    "removedRelations": {
+      "type": "array",
+      "items": { "type": "object" }
+    },
+    "deletedRelations": {
+      "type": "array",
+      "items": { "type": "object" }
+    },
+    "constraint": { "type": "object" },
+    "dependency": { "type": "object" },
+    "strategy": {
+      "enum": ["fixed_default", "formula", "manual", "import_mapping"]
+    },
+    "value": {},
+    "previousDefaultValue": {},
+    "view": { "type": "object" },
+    "nextView": { "type": "object" },
+    "previousView": { "type": "object" }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,20 @@
+[
+  {
+    "id": 1040001,
+    "caseId": 1010001,
+    "sequence": 1,
+    "flowType": "SCENARIO"
+  },
+  {
+    "id": 1040002,
+    "caseId": 1010001,
+    "sequence": 2,
+    "flowType": "BATTLE"
+  },
+  {
+    "id": 1040003,
+    "caseId": 1010001,
+    "sequence": 3,
+    "flowType": "SCENARIO"
+  }
+]

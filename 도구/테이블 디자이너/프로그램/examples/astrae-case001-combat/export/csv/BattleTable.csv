@@ -1,0 +1,4 @@
+id,caseDifficultyId,battleType,combatRuleId,bossId,bossHpMultiplier,bossDamageMultiplier,breakGaugeMultiplier,victoryConditionType,defeatConditionType
+2030001,1050001,Boss,2010001,2060001,0.8,0.85,0.85,BossDefeat,PartyDefeat
+2030002,1050002,Boss,2010001,2060001,1,1,1,BossDefeat,PartyDefeat
+2030003,1050003,Boss,2010001,2060001,1.35,1.25,1.2,BossDefeat,PartyDefeat

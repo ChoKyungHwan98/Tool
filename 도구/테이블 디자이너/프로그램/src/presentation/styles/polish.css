@@ -1,0 +1,536 @@
+/* Final usability layer. Component styles will move here as legacy rules are retired. */
+
+button,
+input,
+select,
+textarea {
+  letter-spacing: 0;
+}
+
+.dashboard {
+  background: var(--app-bg);
+}
+
+.dashboard .btn-primary,
+.dashboard .btn-ghost,
+.project-card {
+  border-radius: 8px;
+}
+
+.brand-eyebrow,
+.view-eyebrow {
+  letter-spacing: 0;
+}
+
+.view-header h1,
+.schema-view-header h1,
+.designer-header h1,
+.data-header h1 {
+  font-size: 19px;
+  line-height: 1.25;
+}
+
+.view-header p,
+.schema-view-header p,
+.designer-header p,
+.data-header p {
+  font-size: 12px;
+}
+
+.tool-button,
+.primary-action,
+.mini-action,
+.segmented,
+.designer-tabs button {
+  min-height: 32px;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.icon-button {
+  width: 34px;
+  height: 34px;
+  border-radius: 6px;
+}
+
+.tree-row,
+.spreadsheet-cell,
+.spreadsheet-column-header,
+.designer-column,
+.column-menu button,
+.table-context-menu button {
+  font-size: 12px;
+}
+
+.tree-row small,
+.explorer-heading small,
+.save-indicator,
+.assistant-title span,
+.proposal-message span,
+.field-label,
+.column-facts dt,
+.form-hint {
+  font-size: 11px;
+}
+
+.workspace-grid {
+  position: relative;
+}
+
+.assistant-panel-body {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+}
+
+.assistant-thread {
+  background: #fbfcfd;
+  font-size: 13px;
+}
+
+.assistant-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.assistant-quick-start {
+  display: grid;
+  align-content: start;
+  gap: 6px;
+  width: 100%;
+}
+
+.assistant-quick-start > strong {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 4px;
+  color: #33465b;
+  font-size: 12px;
+}
+
+.assistant-quick-start > strong svg {
+  color: var(--app-primary);
+}
+
+.assistant-quick-start > button {
+  display: flex;
+  min-height: 36px;
+  align-items: center;
+  padding: 0 10px;
+  border: 1px solid #d6e0e8;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #2f4359;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 650;
+  text-align: left;
+  cursor: pointer;
+}
+
+.assistant-quick-start > button:hover,
+.assistant-quick-start > button:focus-visible {
+  border-color: #8fbcc2;
+  background: #edf6f5;
+  color: var(--app-primary);
+}
+
+.column-menu {
+  max-height: min(440px, calc(100vh - 112px));
+  overflow-y: auto;
+}
+
+.column-menu-group-title {
+  display: block;
+  padding: 7px 9px 4px;
+  border-top: 1px solid #e4e9ee;
+  color: #718095;
+  font-size: 11px;
+  font-weight: 750;
+}
+
+.column-menu-group-title:first-child {
+  padding-top: 3px;
+  border-top: 0;
+}
+
+.schema-node-title strong,
+.schema-node-summary,
+.schema-node-column {
+  font-size: 11px;
+}
+
+.schema-node-title span,
+.schema-node-more {
+  font-size: 11px;
+}
+
+.schema-node-title strong {
+  line-height: 1.25;
+}
+
+.import-dialog,
+.export-drawer {
+  border-radius: 0;
+}
+
+.import-dialog {
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  overflow: hidden;
+}
+
+.import-dialog-body,
+.export-drawer > .data-shell {
+  min-height: 0;
+  overflow: auto;
+}
+
+.import-dialog-header,
+.import-dialog-footer,
+.drawer-heading {
+  background: #ffffff;
+}
+
+.relation-workspace-section > .wide-action {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  margin-top: auto;
+  background: #ffffff;
+}
+
+@media (min-width: 1280px) and (max-width: 1599px) {
+  .workspace-grid:not(.explorer-collapsed) {
+    --explorer-width: 232px !important;
+  }
+
+  .workspace-grid:not(.assistant-collapsed) {
+    --assistant-width: 360px !important;
+  }
+}
+
+@media (min-width: 1280px) and (max-width: 1350px) {
+  .top-bar {
+    grid-template-columns: minmax(190px, 0.6fr) auto minmax(390px, 1fr);
+    gap: 8px;
+  }
+
+  .top-bar .segmented {
+    min-width: 82px;
+    padding: 0 7px;
+  }
+
+  .compact-tool {
+    padding: 0 8px;
+  }
+
+  .schema-view-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .schema-header-tools {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .schema-search-wrap {
+    flex: 1;
+  }
+
+  .designer-basic {
+    grid-template-columns: minmax(245px, 0.78fr) minmax(280px, 1.22fr);
+  }
+
+  .designer-relations {
+    grid-template-columns: 1fr;
+  }
+
+  .relation-workspace-section + .relation-workspace-section {
+    border-top: 1px solid #dce3ea;
+    border-left: 0;
+  }
+
+  .designer-relations > .relation-list {
+    grid-column: 1;
+  }
+
+  .spreadsheet-header .compact-row-action {
+    width: 32px;
+    padding: 0;
+  }
+
+  .spreadsheet-header .compact-row-action span,
+  .spreadsheet-toolbar > span:nth-of-type(1) {
+    display: none;
+  }
+
+}
+
+@media (max-width: 1279px) {
+  .top-bar {
+    grid-template-columns: minmax(220px, 1fr) auto;
+    grid-template-rows: 52px 42px;
+    grid-template-areas:
+      "project actions"
+      "views views";
+    height: 94px;
+    min-height: 94px;
+    padding: 0 12px;
+    gap: 0 10px;
+  }
+
+  .project-context {
+    display: flex;
+    grid-area: project;
+  }
+
+  .top-bar .view-switch {
+    grid-area: views;
+    justify-self: center;
+    align-self: start;
+  }
+
+  .top-bar .primary-toolbar {
+    grid-area: actions;
+  }
+
+  .workspace-grid {
+    height: calc(100vh - 94px);
+    height: calc(100dvh - 94px);
+  }
+
+  .workspace-grid {
+    --explorer-width: 48px !important;
+    --assistant-width: 48px !important;
+    grid-template-columns: 48px minmax(0, 1fr) 48px !important;
+  }
+
+  .workspace-grid .project-explorer.collapsed,
+  .workspace-grid .assistant-panel.collapsed {
+    width: 48px;
+  }
+
+  .workspace-grid .project-explorer:not(.collapsed) {
+    position: absolute;
+    inset: 0 auto 0 0;
+    z-index: 45;
+    width: min(288px, calc(100vw - 96px));
+    box-shadow: 10px 0 26px rgba(15, 23, 42, 0.18);
+  }
+
+  .workspace-grid .assistant-panel:not(.collapsed) {
+    position: absolute;
+    inset: 0 0 0 auto;
+    z-index: 45;
+    width: min(360px, calc(100vw - 96px));
+    box-shadow: -10px 0 26px rgba(15, 23, 42, 0.18);
+  }
+
+  .workspace-grid .assistant-panel:not(.collapsed) .assistant-resizer {
+    display: none;
+  }
+
+  .schema-view-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .schema-header-tools {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .schema-search-wrap {
+    flex: 1;
+  }
+
+  .project-start-options {
+    grid-template-columns: 1fr;
+    width: min(520px, calc(100vw - 160px));
+  }
+
+  .start-option {
+    min-height: 100px;
+  }
+
+  .spreadsheet-header .compact-row-action {
+    width: 32px;
+    padding: 0;
+  }
+
+  .spreadsheet-header .compact-row-action span,
+  .spreadsheet-toolbar > span:nth-of-type(1) {
+    display: none;
+  }
+
+  .designer-relations {
+    grid-template-columns: minmax(190px, 0.65fr) minmax(320px, 1.15fr) minmax(180px, 0.6fr);
+    align-content: stretch;
+    overflow: hidden;
+  }
+
+  .relation-workspace-section {
+    min-height: 0;
+    padding: 16px;
+    overflow: auto;
+  }
+
+  .relation-workspace-section + .relation-workspace-section {
+    border-top: 0;
+    border-left: 1px solid #dce3ea;
+  }
+
+  .designer-relations > .relation-list {
+    display: flex;
+    grid-column: auto;
+    border-top: 0;
+  }
+
+  .export-drawer {
+    width: min(560px, calc(100vw - 48px));
+    min-width: 0;
+  }
+}
+/* 대시보드 레일·목록 CSS는 segments/dashboard.css로 옮겼다. 여기는 저장 상태 표시줄만 남는다. */
+.new-project-dialog header p {
+  margin: 6px 0 0;
+  color: #607087;
+  font-size: 13px;
+}
+
+.save-status-wrap { position: relative; }
+
+.save-indicator {
+  height: 22px;
+  padding: 0 5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: #597084;
+  font-size: 11px;
+}
+
+.save-indicator--dirty { color: #9a6400; }
+.save-indicator--error { color: #b42318; }
+.save-indicator--recovered { color: #27663a; }
+
+.save-status-popover {
+  z-index: 80;
+  position: absolute;
+  top: 26px;
+  left: 0;
+  width: 250px;
+  padding: 12px;
+  display: grid;
+  gap: 6px;
+  border: 1px solid #cbd5df;
+  border-radius: 6px;
+  background: #fff;
+  box-shadow: 0 12px 30px rgb(20 32 51 / 18%);
+  color: #52647a;
+  font-size: 12px;
+}
+
+.save-status-popover strong { color: #1d2b3e; }
+.save-status-popover p { margin: 2px 0; color: #8f2d24; line-height: 1.45; }
+.save-conflict-actions { display: flex; gap: 8px; }
+.save-conflict-actions .tool-button { flex: 1; justify-content: center; }
+.spin { animation: save-spin 0.9s linear infinite; }
+@keyframes save-spin { to { transform: rotate(360deg); } }
+
+.designer-table-field textarea,
+.column-form textarea {
+  width: 100%;
+  min-height: 72px;
+  margin-top: 6px;
+  padding: 8px 10px;
+  resize: vertical;
+  border: 1px solid #cbd5df;
+  border-radius: 5px;
+  background: #fff;
+  color: #223349;
+  font: inherit;
+  line-height: 1.45;
+}
+
+.export-drawer--integrated {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+.drawer-heading > div:first-child span {
+  display: block;
+  margin-top: 3px;
+  color: #6b7a8f;
+  font-size: 12px;
+}
+
+.export-drawer-body {
+  min-height: 0;
+  padding: 8px 24px 32px;
+  overflow: auto;
+}
+
+.integrated-export-panel {
+  width: 100%;
+  padding: 26px 0;
+}
+
+.integrated-export-panel + .integrated-export-panel {
+  border-top: 1px solid #e4e9ee;
+}
+
+.export-format-summary {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  color: #087487;
+}
+
+.export-format-summary h2 { margin: 0; color: #17263a; font-size: 18px; letter-spacing: 0; }
+.export-format-summary p { margin: 6px 0 0; color: #66778c; font-size: 13px; line-height: 1.5; }
+
+.workbook-sheet-plan {
+  margin: 20px 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid #dde4ea;
+}
+
+.workbook-sheet-plan li {
+  padding: 10px 4px;
+  display: grid;
+  gap: 3px;
+  border-bottom: 1px solid #e4e9ee;
+}
+
+.workbook-sheet-plan strong { font-size: 13px; }
+.workbook-sheet-plan span { color: #66778c; font-size: 12px; }
+
+.export-operation-message {
+  min-height: 34px;
+  margin: 14px 0 0;
+  padding: 8px 10px;
+  border-radius: 5px;
+  background: #f1f5f7;
+  color: #52647a;
+  font-size: 12px;
+}
+
+.export-operation-message.error { background: #fff1f0; color: #a72a20; }
+.export-operation-message.done { background: #eef8f0; color: #27663a; }
+
+.export-primary-action {
+  min-width: 210px;
+  margin-top: 18px;
+}
+
+/* .recovery-dialog / .recovery-list는 segments/dashboard.css로 옮겼다. */

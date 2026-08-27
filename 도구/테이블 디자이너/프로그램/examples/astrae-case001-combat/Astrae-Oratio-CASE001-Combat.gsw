@@ -1,0 +1,1298 @@
+{
+  "formatVersion": 2,
+  "revision": 0,
+  "schema": {
+    "projectId": "proj_astrae_case001_combat",
+    "name": "아스트라에 오라티오 CASE_001 전투·캐릭터 데이터",
+    "schemaVersion": "6.2.0",
+    "tables": [
+      {
+        "tableId": "tbl_combat_combat_rule",
+        "name": "CombatRuleTable",
+        "displayName": "전투 규칙",
+        "description": "CASE_001 전투가 따르는 공통 턴·AP·행동 예고·BREAK 발생 규칙이다.",
+        "columns": [
+          {
+            "columnId": "col_combat_combat_rule_id",
+            "tableId": "tbl_combat_combat_rule",
+            "name": "id",
+            "displayName": "ID",
+            "description": "전투 규칙 행의 숫자형 단일 PK.",
+            "dataType": {
+              "kind": "int32"
+            },
+            "nullable": false,
+            "validationRules": [],
+            "deprecated": false
+          },
+          {
+            "columnId": "col_combat_combat_rule_name",
+            "tableId": "tbl_combat_combat_rule",
+            "name": "name",
+            "displayName": "이름",
+            "description": "기획자가 전투 규칙을 식별하기 위한 편의 이름.",
+            "dataType": {
+              "kind": "string"
+            },
+            "nullable": false,
+            "validationRules": [],
+            "deprecated": false
+          },
+          {
+            "columnId": "col_combat_combat_rule_party_size",
+            "tableId": "tbl_combat_combat_rule",
+            "name": "maxPartySize",
+            "displayName": "최대 파티 인원",
+            "description": "정식 전투 규칙이 허용하는 최대 파티 인원. 현재 목업 캐릭터는 1명이다.",
+            "dataType": {
+              "kind": "int32"
+            },
+            "nullable": false,
+            "validationRules": [],
+            "deprecated": false
+          },
+          {
+            "columnId": "col_combat_combat_rule_turn_start_ap",
+            "tableId": "tbl_combat_combat_rule",
+            "name": "turnStartAp",
+            "displayName": "턴 시작 AP",
+            "description": "플레이어 Turn 시작 시 지급되는 공용 AP.",
+            "dataType": {
+              "kind": "int32"
+            },
+            "nullable": false,
+            "validationRules": [],
+            "deprecated": false
+          },
+          {
+            "columnId": "col_combat_combat_rule_enemy_intent_count",
+            "tableId": "tbl_combat_combat_rule",
+            "name": "enemyIntentCount",
+            "displayName": "적 행동 예고 수",
+            "description": "적 Turn에 표시할 행동 예고 슬롯 수.",
+            "dataType": {
+              "kind": "int32"
+            },
+            "nullable": false,
+            "validationRules": [],
+            "deprecated": false
+          },
+          {
+            "columnId": "col_combat_combat_rule_break_trigger_type",
+            "tableId": "tbl_combat_combat_rule",
+            "name": "breakTriggerType",
+            "displayName": "BREAK 발생 조건",
+            "description": "모든 적에게 공통 적용할 BREAK 발생 조건.",
+            "dataType": {
+              "kind": "enum",
+              "enumId": "enum_combat_break_trigger_type"
+            },
+            "nullable": false,
+            "validationRules": [],
+            "deprecated": false
+          },
+          {
+            "columnId": "col_combat_combat_rule_break_enemy_action_reduction",
+            "tableId": "tbl_combat_combat_rule",
+            "name": "breakEnemyActionReduction",
+            "displayName": "BREAK 적 행동 감소 수",
+            "description": "BREAK 발생 Turn에 줄어드는 적 행동 예고·실행 수. Prototype 임의 규칙.",
+            "dataType": {
+              "kind": "int32"
+            },
+            "nullable": false,
+            "validationRules": [],
+            "deprecated": false
+          },
+          {
+            "columnId": "col_combat_combat_rule_break_gauge_reset_timing",
+            "tableId": "tbl_combat_combat_rule",
+            "name": "breakGaugeResetTiming",
+            "displayName": "BREAK Gauge 초기화 시점",
+            "description": "BREAK 이후 Gauge를 최대치로 되돌리는 시점. Prototype 임의 규칙.",
+            "dataType": {
+              "kind": "enum",
+              "enumId": "enum_combat_break_gauge_reset_timing"
+            },
+            "nullable": false,
+            "validationRules": [],
+            "deprecated": false
+          }
+        ],
+        "primaryKey": {
+          "columnIds": [
+            "col_combat_combat_rule_id"
+          ]
+        },
+        "uniqueConstraints": [],
+        "checkConstraints": [],
+        "tags": [
+          "전투",
+          "규칙"
+        ],
+        "authoringOnly": false,
+        "runtimeOnly": false
+      },
+      {
+        "tableId": "tbl_combat_battle",
+        "name": "BattleTable",
+        "displayName": "난이도별 전투",
+        "description": "콘텐츠 프로젝트의 CaseDifficultyTable.id와 전투 규칙·보스·보정 배율을 직접 연결한다.",
+        "columns": [
+          {
+            "columnId": "col_combat_battle_id",
+            "tableId": "tbl_combat_battle",
+            "name": "id",
+            "displayName": "ID",
+            "description": "전투 행의 숫자형 단일 PK.",
+            "dataType": {
+              "kind": "int32"
+            },
+            "nullable": false,
+            "validationRules": [],
+            "deprecated": false
+          },
+          {
+            "columnId": "col_combat_battle_case_difficulty_id",
+            "tableId": "tbl_combat_battle",
+            "name": "caseDifficultyId",
+            "displayName": "CASE 난이도 ID",
+            "description": "콘텐츠 프로젝트 CaseDifficultyTable.id. 프로젝트 간 계약값이다.",
+            "dataType": {
+              "kind": "int32"
+            },
+            "nullable": false,
+            "validationRules": [],
+            "deprecated": false
+          },
+          {
+            "columnId": "col_combat_battle_battle_type",
+            "tableId": "tbl_combat_battle",
+            "name": "battleType",
+            "displayName": "전투 유형",
+            "description": "보스전 등 전투 분류.",
+            "dataType": {
+              "kind": "enum",
+              "enumId": "enum_combat_battle_type"
+            },
+            "nullable": false,
+            "validationRules": [],
+            "deprecated": false
+          },
+          {
+            "columnId": "col_combat_battle_combat_rule_id",
+            "tableId": "tbl_combat_battle",
+            "name": "combatRuleId",
+            "displayName": "전투 규칙 ID",
+            "description": "적용할 CombatRuleTable.id.",
+            "dataType": {
+              "kind": "int32"
+            },
+            "nullable": false,
+            "validationRules": [],
+            "deprecated": false
+          },
+          {
+            "columnId": "col_combat_battle_boss_id",
+            "tableId": "tbl_combat_battle",
+            "name": "bossId",
+            "displayName": "보스 ID",
+            "description": "등장할 BossTable.id.",
+            "dataType": {
+              "kind": "int32"
+            },
+            "nullable": false,
+            "validationRules": [],
+            "deprecated": false
+          },
+          {
+            "columnId": "col_combat_battle_boss_hp_multiplier",
+            "tableId": "tbl_combat_battle",
+            "name": "bossHpMultiplier",
+            "displayName": "보스 HP 배율",
+            "description": "BossTable의 기본 HP에 곱하는 난이도별 Prototype 배율.",
+            "dataType": {
+              "kind": "float"
+            },
+            "nullable": false,
+            "validationRules": [],
+            "deprecated": false
+          },
+          {
+            "columnId": "col_combat_battle_boss_damage_multiplier",
+            "tableId": "tbl_combat_battle",
+            "name": "bossDamageMultiplier",
+            "displayName": "보스 공격 배율",
+            "description": "BossActionTable의 공격 계수에 곱하는 난이도별 Prototype 배율.",
+            "dataType": {
+              "kind": "float"
+            },
+            "nullable": false,
+            "validationRules": [],
+            "deprecated": false
+          },
+          {
+            "columnId": "col_combat_battle_break_gauge_multiplier",
+            "tableId": "tbl_combat_battle",
+            "name": "breakGaugeMultiplier",
+            "displayName": "BREAK Gauge 배율",
+            "description": "BossTable의 기본 BREAK Gauge에 곱하는 난이도별 Prototype 배율.",
+            "dataType": {
+              "kind": "float"
+            },
+            "nullable": false,
+            "validationRules": [],
+            "deprecated": false
+          },
+          {
+            "columnId": "col_combat_battle_victory_condition_type",
+            "tableId": "tbl_combat_battle",
+            "name": "victoryConditionType",
+            "displayName": "승리 조건",
+            "description": "전투 승리 판정 유형.",
+            "dataType": {
+              "kind": "enum",
+              "enumId": "enum_combat_victory_condition_type"
+            },
+            "nullable": false,
+            "validationRules": [],
+            "deprecated": false
+          },
+          {
+            "columnId": "col_combat_battle_defeat_condition_type",
+            "tableId": "tbl_combat_battle",
+            "name": "defeatConditionType",
+            "displayName": "패배 조건",
+            "description": "전투 패배 판정 유형.",
+            "dataType": {
+              "kind": "enum",
+              "enumId": "enum_combat_defeat_condition_type"
+            },
+            "nullable": false,
+            "validationRules": [],
+            "deprecated": false
+          }
+        ],
+        "primaryKey": {
+          "columnIds": [
+            "col_combat_battle_id"
+          ]
+        },
+        "uniqueConstraints": [
+          {
+            "constraintId": "unique_combat_battle_1",
+            "name": "UQ_BattleTable_caseDifficultyId",
+            "columnIds": [
+              "col_combat_battle_case_difficulty_id"
+            ]
+          }
+        ],
+        "checkConstraints": [],
+        "tags": [
+          "전투",
+          "진입점"
+        ],
+        "authoringOnly": false,
+        "runtimeOnly": false
+      },
+      {
+        "tableId": "tbl_combat_character",
+        "name": "CharacterTable",
+        "displayName": "캐릭터 전투 정보",
+        "description": "플레이어블 캐릭터의 전투용 기본 수치를 관리한다. 현재 수치는 기능 검증용 가안이다.",
+        "columns": [
+          {
+            "columnId": "col_combat_character_id",
+            "tableId": "tbl_combat_character",
+            "name": "id",
+            "displayName": "ID",
+            "description": "캐릭터 행의 숫자형 단일 PK.",
+            "dataType": {
+              "kind": "int32"
+            },
+            "nullable": false,
+            "validationRules": [],
+            "deprecated": false
+          },
+          {
+            "columnId": "col_combat_character_name",
+            "tableId": "tbl_combat_character",
+            "name": "name",
+            "displayName": "이름",
+            "description": "기획자가 캐릭터를 식별하기 위한 편의 이름.",
+            "dataType": {
+              "kind": "string"
+            },
+            "nullable": false,
+            "validationRules": [],
+            "deprecated": false
+          },
+          {
+            "columnId": "col_combat_character_max_hp",
+            "tableId": "tbl_combat_character",
+            "name": "maxHp",
+            "displayName": "최대 HP",
+            "description": "기능 목업용 최대 HP 가안.",
+            "dataType": {
+              "kind": "int32"
+            },
+            "nullable": false,
+            "validationRules": [],
+            "deprecated": false
+          },
+          {
+            "columnId": "col_combat_character_max_ultimate_gauge",
+            "tableId": "tbl_combat_character",
+            "name": "maxUltimateGauge",
+            "displayName": "최대 궁극기 Gauge",
+            "description": "영지선언 사용에 필요한 Gauge 최대값 가안.",
+            "dataType": {
+              "kind": "int32"
+            },
+            "nullable": false,
+            "validationRules": [],
+            "deprecated": false
+          }
+        ],
+        "primaryKey": {
+          "columnIds": [
+            "col_combat_character_id"
+          ]
+        },
+        "uniqueConstraints": [],
+        "checkConstraints": [],
+        "tags": [
+          "캐릭터",
+          "전투 수치"
+        ],
+        "authoringOnly": false,
+        "runtimeOnly": false
+      },
+      {
+        "tableId": "tbl_combat_character_action",
+        "name": "CharacterActionTable",
+        "displayName": "캐릭터 행동",
+        "description": "마미야 리츠가 사용할 일반공격·스킬·교대·대응·영지선언 데이터를 관리한다.",
+        "columns": [
+          {
+            "columnId": "col_combat_character_action_id",
+            "tableId": "tbl_combat_character_action",
+            "name": "id",
+            "displayName": "ID",
+            "description": "캐릭터 행동 행의 숫자형 단일 PK.",
+            "dataType": {
+              "kind": "int32"
+            },
+            "nullable": false,
+            "validationRules": [],
+            "deprecated": false
+          },
+          {
+            "columnId": "col_combat_character_action_character_id",
+            "tableId": "tbl_combat_character_action",
+            "name": "characterId",
+            "displayName": "캐릭터 ID",
+            "description": "행동을 소유한 CharacterTable.id.",
+            "dataType": {
+              "kind": "int32"
+            },
+            "nullable": false,
+            "validationRules": [],
+            "deprecated": false
+          },
+          {
+            "columnId": "col_combat_character_action_name",
+            "tableId": "tbl_combat_character_action",
+            "name": "name",
+            "displayName": "이름",
+            "description": "기획자가 행동을 식별하기 위한 편의 이름.",
+            "dataType": {
+              "kind": "string"
+            },
+            "nullable": false,
+            "validationRules": [],
+            "deprecated": false
+          },
+          {
+            "columnId": "col_combat_character_action_action_type",
+            "tableId": "tbl_combat_character_action",
+            "name": "actionType",
+            "displayName": "행동 유형",
+            "description": "일반공격·스킬·교대·대응·영지선언 구분.",
+            "dataType": {
+              "kind": "enum",
+              "enumId": "enum_combat_action_type"
+            },
+            "nullable": false,
+            "validationRules": [],
+            "deprecated": false
+          },
+          {
+            "columnId": "col_combat_character_action_target_type",
+            "tableId": "tbl_combat_character_action",
+            "name": "targetType",
+            "displayName": "대상 유형",
+            "description": "행동을 적용할 대상.",
+            "dataType": {
+              "kind": "enum",
+              "enumId": "enum_combat_target_type"
+            },
+            "nullable": false,
+            "validationRules": [],
+            "deprecated": false
+          },
+          {
+            "columnId": "col_combat_character_action_ap_cost",
+            "tableId": "tbl_combat_character_action",
+            "name": "apCost",
+            "displayName": "AP 비용",
+            "description": "행동을 사용할 때 소비하는 공용 AP. 현재 값은 기능 목업용 가안이다.",
+            "dataType": {
+              "kind": "int32"
+            },
+            "nullable": false,
+            "validationRules": [],
+            "deprecated": false
+          },
+          {
+            "columnId": "col_combat_character_action_cooldown_round",
+            "tableId": "tbl_combat_character_action",
+            "name": "cooldownRound",
+            "displayName": "Round 쿨다운",
+            "description": "재사용 대기 Round 수. 적용되지 않으면 0.",
+            "dataType": {
+              "kind": "int32"
+            },
+            "nullable": false,
+            "validationRules": [],
+            "deprecated": false
+          },
+          {
+            "columnId": "col_combat_character_action_hp_power",
+            "tableId": "tbl_combat_character_action",
+            "name": "hpDamage",
+            "displayName": "HP 피해",
+            "description": "Unity 기능 목업에서 적 HP에 직접 적용할 고정 피해.",
+            "dataType": {
+              "kind": "int32"
+            },
+            "nullable": false,
+            "validationRules": [],
+            "deprecated": false
+          },
+          {
+            "columnId": "col_combat_character_action_break_power",
+            "tableId": "tbl_combat_character_action",
+            "name": "breakDamage",
+            "displayName": "BREAK 피해",
+            "description": "적 BREAK Gauge에 직접 적용할 고정 피해.",
+            "dataType": {
+              "kind": "int32"
+            },
+            "nullable": false,
+            "validationRules": [],
+            "deprecated": false
+          },
+          {
+            "columnId": "col_combat_character_action_ultimate_gauge_gain",
+            "tableId": "tbl_combat_character_action",
+            "name": "ultimateGaugeGain",
+            "displayName": "궁극기 Gauge 획득",
+            "description": "공격 행동 적중 시 얻는 Gauge 가안.",
+            "dataType": {
+              "kind": "int32"
+            },
+            "nullable": false,
+            "validationRules": [],
+            "deprecated": false
+          },
+          {
+            "columnId": "col_combat_character_action_cancels_current_enemy_action",
+            "tableId": "tbl_combat_character_action",
+            "name": "cancelsCurrentEnemyAction",
+            "displayName": "현재 적 행동 취소",
+            "description": "대응 창에서 사용했을 때 현재 해결 중인 적 행동 1개를 취소하는가.",
+            "dataType": {
+              "kind": "boolean"
+            },
+            "nullable": false,
+            "validationRules": [],
+            "deprecated": false
+          },
+          {
+            "columnId": "col_combat_character_action_is_implemented",
+            "tableId": "tbl_combat_character_action",
+            "name": "isImplemented",
+            "displayName": "구현 여부",
+            "description": "현재 NORMAL 전투 목업에서 실제 사용할 수 있는 행동인지 여부.",
+            "dataType": {
+              "kind": "boolean"
+            },
+            "nullable": false,
+            "validationRules": [],
+            "deprecated": false
+          },
+          {
+            "columnId": "col_combat_character_action_unity_action_key",
+            "tableId": "tbl_combat_character_action",
+            "name": "unityActionKey",
+            "displayName": "Unity 행동 키",
+            "description": "Unity가 실제 행동 코드를 찾기 위한 키.",
+            "dataType": {
+              "kind": "string"
+            },
+            "nullable": false,
+            "validationRules": [],
+            "deprecated": false
+          }
+        ],
+        "primaryKey": {
+          "columnIds": [
+            "col_combat_character_action_id"
+          ]
+        },
+        "uniqueConstraints": [
+          {
+            "constraintId": "unique_combat_character_action_1",
+            "name": "UQ_CharacterActionTable_unityActionKey",
+            "columnIds": [
+              "col_combat_character_action_unity_action_key"
+            ]
+          }
+        ],
+        "checkConstraints": [],
+        "tags": [
+          "캐릭터",
+          "행동"
+        ],
+        "authoringOnly": false,
+        "runtimeOnly": false
+      },
+      {
+        "tableId": "tbl_combat_boss",
+        "name": "BossTable",
+        "displayName": "보스 전투 정보",
+        "description": "CASE_001 보스의 HP Bar·BREAK와 Unity HFSM 연결 키를 관리한다.",
+        "columns": [
+          {
+            "columnId": "col_combat_boss_id",
+            "tableId": "tbl_combat_boss",
+            "name": "id",
+            "displayName": "ID",
+            "description": "보스 행의 숫자형 단일 PK.",
+            "dataType": {
+              "kind": "int32"
+            },
+            "nullable": false,
+            "validationRules": [],
+            "deprecated": false
+          },
+          {
+            "columnId": "col_combat_boss_name",
+            "tableId": "tbl_combat_boss",
+            "name": "name",
+            "displayName": "이름",
+            "description": "기획자가 보스를 식별하기 위한 편의 이름.",
+            "dataType": {
+              "kind": "string"
+            },
+            "nullable": false,
+            "validationRules": [],
+            "deprecated": false
+          },
+          {
+            "columnId": "col_combat_boss_hp_per_bar",
+            "tableId": "tbl_combat_boss",
+            "name": "hpPerBar",
+            "displayName": "HP Bar당 HP",
+            "description": "기능 목업용 HP 가안.",
+            "dataType": {
+              "kind": "int32"
+            },
+            "nullable": false,
+            "validationRules": [],
+            "deprecated": false
+          },
+          {
+            "columnId": "col_combat_boss_hp_bar_count",
+            "tableId": "tbl_combat_boss",
+            "name": "hpBarCount",
+            "displayName": "HP Bar 개수",
+            "description": "×N으로 표시할 HP Bar 수 가안.",
+            "dataType": {
+              "kind": "int32"
+            },
+            "nullable": false,
+            "validationRules": [],
+            "deprecated": false
+          },
+          {
+            "columnId": "col_combat_boss_break_gauge_max",
+            "tableId": "tbl_combat_boss",
+            "name": "breakGaugeMax",
+            "displayName": "BREAK Gauge 최대값",
+            "description": "기능 목업용 BREAK Gauge 가안.",
+            "dataType": {
+              "kind": "int32"
+            },
+            "nullable": false,
+            "validationRules": [],
+            "deprecated": false
+          },
+          {
+            "columnId": "col_combat_boss_hfsm_controller_key",
+            "tableId": "tbl_combat_boss",
+            "name": "hfsmControllerKey",
+            "displayName": "Unity HFSM 키",
+            "description": "Unity에서 생성할 보스 HFSM Controller 키.",
+            "dataType": {
+              "kind": "string"
+            },
+            "nullable": false,
+            "validationRules": [],
+            "deprecated": false
+          }
+        ],
+        "primaryKey": {
+          "columnIds": [
+            "col_combat_boss_id"
+          ]
+        },
+        "uniqueConstraints": [
+          {
+            "constraintId": "unique_combat_boss_1",
+            "name": "UQ_BossTable_hfsmControllerKey",
+            "columnIds": [
+              "col_combat_boss_hfsm_controller_key"
+            ]
+          }
+        ],
+        "checkConstraints": [],
+        "tags": [
+          "보스",
+          "HFSM 연결"
+        ],
+        "authoringOnly": false,
+        "runtimeOnly": false
+      },
+      {
+        "tableId": "tbl_combat_boss_action",
+        "name": "BossActionTable",
+        "displayName": "보스 행동",
+        "description": "Unity HFSM이 ID로 선택하고 실행할 보스 행동과 목업 수치를 관리한다.",
+        "columns": [
+          {
+            "columnId": "col_combat_boss_action_id",
+            "tableId": "tbl_combat_boss_action",
+            "name": "id",
+            "displayName": "ID",
+            "description": "보스 행동 행의 숫자형 단일 PK.",
+            "dataType": {
+              "kind": "int32"
+            },
+            "nullable": false,
+            "validationRules": [],
+            "deprecated": false
+          },
+          {
+            "columnId": "col_combat_boss_action_boss_id",
+            "tableId": "tbl_combat_boss_action",
+            "name": "bossId",
+            "displayName": "보스 ID",
+            "description": "행동을 소유한 BossTable.id.",
+            "dataType": {
+              "kind": "int32"
+            },
+            "nullable": false,
+            "validationRules": [],
+            "deprecated": false
+          },
+          {
+            "columnId": "col_combat_boss_action_name",
+            "tableId": "tbl_combat_boss_action",
+            "name": "name",
+            "displayName": "이름",
+            "description": "기획자가 보스 행동을 식별하기 위한 편의 이름.",
+            "dataType": {
+              "kind": "string"
+            },
+            "nullable": false,
+            "validationRules": [],
+            "deprecated": false
+          },
+          {
+            "columnId": "col_combat_boss_action_telegraph_type",
+            "tableId": "tbl_combat_boss_action",
+            "name": "telegraphType",
+            "displayName": "예고 형태",
+            "description": "적 행동 예고와 공격 범위 표시 방식.",
+            "dataType": {
+              "kind": "enum",
+              "enumId": "enum_combat_telegraph_type"
+            },
+            "nullable": false,
+            "validationRules": [],
+            "deprecated": false
+          },
+          {
+            "columnId": "col_combat_boss_action_target_type",
+            "tableId": "tbl_combat_boss_action",
+            "name": "targetType",
+            "displayName": "대상 유형",
+            "description": "행동 적용 대상.",
+            "dataType": {
+              "kind": "enum",
+              "enumId": "enum_combat_target_type"
+            },
+            "nullable": false,
+            "validationRules": [],
+            "deprecated": false
+          },
+          {
+            "columnId": "col_combat_boss_action_hp_power",
+            "tableId": "tbl_combat_boss_action",
+            "name": "hpDamage",
+            "displayName": "HP 피해",
+            "description": "Unity 기능 목업에서 대상 HP에 직접 적용할 고정 피해.",
+            "dataType": {
+              "kind": "int32"
+            },
+            "nullable": false,
+            "validationRules": [],
+            "deprecated": false
+          },
+          {
+            "columnId": "col_combat_boss_action_response_window_ms",
+            "tableId": "tbl_combat_boss_action",
+            "name": "responseWindowMs",
+            "displayName": "대응 시간(ms)",
+            "description": "방어·패링 계열 대응을 입력할 수 있는 Unity 목업용 시간 가안.",
+            "dataType": {
+              "kind": "int32"
+            },
+            "nullable": false,
+            "validationRules": [],
+            "deprecated": false
+          },
+          {
+            "columnId": "col_combat_boss_action_selection_weight",
+            "tableId": "tbl_combat_boss_action",
+            "name": "selectionWeight",
+            "displayName": "선택 가중치",
+            "description": "현재 단일 패턴 HFSM에서 행동을 선택할 상대 가중치.",
+            "dataType": {
+              "kind": "int32"
+            },
+            "nullable": false,
+            "validationRules": [],
+            "deprecated": false
+          },
+          {
+            "columnId": "col_combat_boss_action_unity_action_key",
+            "tableId": "tbl_combat_boss_action",
+            "name": "unityActionKey",
+            "displayName": "Unity 행동 키",
+            "description": "Unity가 실제 보스 행동 코드를 찾기 위한 키.",
+            "dataType": {
+              "kind": "string"
+            },
+            "nullable": false,
+            "validationRules": [],
+            "deprecated": false
+          }
+        ],
+        "primaryKey": {
+          "columnIds": [
+            "col_combat_boss_action_id"
+          ]
+        },
+        "uniqueConstraints": [
+          {
+            "constraintId": "unique_combat_boss_action_1",
+            "name": "UQ_BossActionTable_unityActionKey",
+            "columnIds": [
+              "col_combat_boss_action_unity_action_key"
+            ]
+          }
+        ],
+        "checkConstraints": [],
+        "tags": [
+          "보스",
+          "행동"
+        ],
+        "authoringOnly": false,
+        "runtimeOnly": false
+      }
+    ],
+    "enums": [
+      {
+        "enumId": "enum_combat_battle_type",
+        "name": "BattleType",
+        "values": [
+          {
+            "enumValueId": "enum_value_combat_battle_type_boss",
+            "name": "Boss",
+            "displayName": "보스전"
+          }
+        ]
+      },
+      {
+        "enumId": "enum_combat_victory_condition_type",
+        "name": "VictoryConditionType",
+        "values": [
+          {
+            "enumValueId": "enum_value_combat_victory_condition_type_boss_defeat",
+            "name": "BossDefeat",
+            "displayName": "보스 격파"
+          }
+        ]
+      },
+      {
+        "enumId": "enum_combat_defeat_condition_type",
+        "name": "DefeatConditionType",
+        "values": [
+          {
+            "enumValueId": "enum_value_combat_defeat_condition_type_party_defeat",
+            "name": "PartyDefeat",
+            "displayName": "파티 전멸"
+          }
+        ]
+      },
+      {
+        "enumId": "enum_combat_action_type",
+        "name": "ActionType",
+        "values": [
+          {
+            "enumValueId": "enum_value_combat_action_type_normal_attack",
+            "name": "NormalAttack",
+            "displayName": "일반공격"
+          },
+          {
+            "enumValueId": "enum_value_combat_action_type_skill_attack",
+            "name": "SkillAttack",
+            "displayName": "스킬공격"
+          },
+          {
+            "enumValueId": "enum_value_combat_action_type_swap_attack",
+            "name": "SwapAttack",
+            "displayName": "교대 공격"
+          },
+          {
+            "enumValueId": "enum_value_combat_action_type_response",
+            "name": "Response",
+            "displayName": "대응 행동"
+          },
+          {
+            "enumValueId": "enum_value_combat_action_type_ultimate",
+            "name": "Ultimate",
+            "displayName": "영지선언(궁극기)"
+          }
+        ]
+      },
+      {
+        "enumId": "enum_combat_telegraph_type",
+        "name": "TelegraphType",
+        "values": [
+          {
+            "enumValueId": "enum_value_combat_telegraph_type_none",
+            "name": "None",
+            "displayName": "예고 없음"
+          },
+          {
+            "enumValueId": "enum_value_combat_telegraph_type_single",
+            "name": "Single",
+            "displayName": "단일 대상"
+          },
+          {
+            "enumValueId": "enum_value_combat_telegraph_type_line",
+            "name": "Line",
+            "displayName": "직선"
+          },
+          {
+            "enumValueId": "enum_value_combat_telegraph_type_circle",
+            "name": "Circle",
+            "displayName": "원형 범위"
+          },
+          {
+            "enumValueId": "enum_value_combat_telegraph_type_wide",
+            "name": "Wide",
+            "displayName": "광역"
+          }
+        ]
+      },
+      {
+        "enumId": "enum_combat_target_type",
+        "name": "TargetType",
+        "values": [
+          {
+            "enumValueId": "enum_value_combat_target_type_enemy_single",
+            "name": "EnemySingle",
+            "displayName": "적 단일"
+          },
+          {
+            "enumValueId": "enum_value_combat_target_type_self",
+            "name": "Self",
+            "displayName": "자신"
+          },
+          {
+            "enumValueId": "enum_value_combat_target_type_player_single",
+            "name": "PlayerSingle",
+            "displayName": "플레이어 단일"
+          },
+          {
+            "enumValueId": "enum_value_combat_target_type_player_all",
+            "name": "PlayerAll",
+            "displayName": "플레이어 전체"
+          }
+        ]
+      },
+      {
+        "enumId": "enum_combat_break_trigger_type",
+        "name": "BreakTriggerType",
+        "values": [
+          {
+            "enumValueId": "enum_value_combat_break_trigger_type_gauge_zero",
+            "name": "GaugeZero",
+            "displayName": "BREAK Gauge 0"
+          }
+        ]
+      },
+      {
+        "enumId": "enum_combat_break_gauge_reset_timing",
+        "name": "BreakGaugeResetTiming",
+        "values": [
+          {
+            "enumValueId": "enum_value_combat_break_gauge_reset_timing_next_turn_start",
+            "name": "NextTurnStart",
+            "displayName": "다음 Turn 시작"
+          }
+        ]
+      }
+    ],
+    "relations": [
+      {
+        "relationId": "rel_combat_battle_rule",
+        "name": "Battle uses CombatRule",
+        "kind": "hard_fk",
+        "sourceTableId": "tbl_combat_battle",
+        "sourceColumnIds": [
+          "col_combat_battle_combat_rule_id"
+        ],
+        "targetTableId": "tbl_combat_combat_rule",
+        "targetColumnIds": [
+          "col_combat_combat_rule_id"
+        ],
+        "required": true
+      },
+      {
+        "relationId": "rel_combat_battle_boss",
+        "name": "Battle uses Boss",
+        "kind": "hard_fk",
+        "sourceTableId": "tbl_combat_battle",
+        "sourceColumnIds": [
+          "col_combat_battle_boss_id"
+        ],
+        "targetTableId": "tbl_combat_boss",
+        "targetColumnIds": [
+          "col_combat_boss_id"
+        ],
+        "required": true
+      },
+      {
+        "relationId": "rel_combat_character_action",
+        "name": "CharacterAction belongs to Character",
+        "kind": "hard_fk",
+        "sourceTableId": "tbl_combat_character_action",
+        "sourceColumnIds": [
+          "col_combat_character_action_character_id"
+        ],
+        "targetTableId": "tbl_combat_character",
+        "targetColumnIds": [
+          "col_combat_character_id"
+        ],
+        "required": true
+      },
+      {
+        "relationId": "rel_combat_boss_action",
+        "name": "BossAction belongs to Boss",
+        "kind": "hard_fk",
+        "sourceTableId": "tbl_combat_boss_action",
+        "sourceColumnIds": [
+          "col_combat_boss_action_boss_id"
+        ],
+        "targetTableId": "tbl_combat_boss",
+        "targetColumnIds": [
+          "col_combat_boss_id"
+        ],
+        "required": true
+      }
+    ],
+    "functionalDependencies": [],
+    "exportViews": [],
+    "layout": {
+      "nodes": [
+        {
+          "entityId": "tbl_combat_combat_rule",
+          "x": 20,
+          "y": 20
+        },
+        {
+          "entityId": "tbl_combat_battle",
+          "x": 450,
+          "y": 20
+        },
+        {
+          "entityId": "tbl_combat_boss",
+          "x": 900,
+          "y": 20
+        },
+        {
+          "entityId": "tbl_combat_boss_action",
+          "x": 900,
+          "y": 600
+        },
+        {
+          "entityId": "tbl_combat_character",
+          "x": 20,
+          "y": 600
+        },
+        {
+          "entityId": "tbl_combat_character_action",
+          "x": 450,
+          "y": 600
+        }
+      ]
+    },
+    "commandHistory": []
+  },
+  "rowsByTable": {
+    "tbl_combat_combat_rule": [
+      {
+        "rowId": "row_rule_case001",
+        "cells": {
+          "col_combat_combat_rule_id": 2010001,
+          "col_combat_combat_rule_name": "CASE_001 공통 전투 규칙",
+          "col_combat_combat_rule_party_size": 3,
+          "col_combat_combat_rule_turn_start_ap": 3,
+          "col_combat_combat_rule_enemy_intent_count": 3,
+          "col_combat_combat_rule_break_trigger_type": "GaugeZero",
+          "col_combat_combat_rule_break_enemy_action_reduction": 1,
+          "col_combat_combat_rule_break_gauge_reset_timing": "NextTurnStart"
+        }
+      }
+    ],
+    "tbl_combat_battle": [
+      {
+        "rowId": "row_battle_case001_easy",
+        "cells": {
+          "col_combat_battle_id": 2030001,
+          "col_combat_battle_case_difficulty_id": 1050001,
+          "col_combat_battle_battle_type": "Boss",
+          "col_combat_battle_combat_rule_id": 2010001,
+          "col_combat_battle_boss_id": 2060001,
+          "col_combat_battle_boss_hp_multiplier": 0.8,
+          "col_combat_battle_boss_damage_multiplier": 0.85,
+          "col_combat_battle_break_gauge_multiplier": 0.85,
+          "col_combat_battle_victory_condition_type": "BossDefeat",
+          "col_combat_battle_defeat_condition_type": "PartyDefeat"
+        }
+      },
+      {
+        "rowId": "row_battle_case001_normal",
+        "cells": {
+          "col_combat_battle_id": 2030002,
+          "col_combat_battle_case_difficulty_id": 1050002,
+          "col_combat_battle_battle_type": "Boss",
+          "col_combat_battle_combat_rule_id": 2010001,
+          "col_combat_battle_boss_id": 2060001,
+          "col_combat_battle_boss_hp_multiplier": 1,
+          "col_combat_battle_boss_damage_multiplier": 1,
+          "col_combat_battle_break_gauge_multiplier": 1,
+          "col_combat_battle_victory_condition_type": "BossDefeat",
+          "col_combat_battle_defeat_condition_type": "PartyDefeat"
+        }
+      },
+      {
+        "rowId": "row_battle_case001_hard",
+        "cells": {
+          "col_combat_battle_id": 2030003,
+          "col_combat_battle_case_difficulty_id": 1050003,
+          "col_combat_battle_battle_type": "Boss",
+          "col_combat_battle_combat_rule_id": 2010001,
+          "col_combat_battle_boss_id": 2060001,
+          "col_combat_battle_boss_hp_multiplier": 1.35,
+          "col_combat_battle_boss_damage_multiplier": 1.25,
+          "col_combat_battle_break_gauge_multiplier": 1.2,
+          "col_combat_battle_victory_condition_type": "BossDefeat",
+          "col_combat_battle_defeat_condition_type": "PartyDefeat"
+        }
+      }
+    ],
+    "tbl_combat_character": [
+      {
+        "rowId": "row_character_mamiya_ritsu",
+        "cells": {
+          "col_combat_character_id": 2040001,
+          "col_combat_character_name": "마미야 리츠",
+          "col_combat_character_max_hp": 2400,
+          "col_combat_character_max_ultimate_gauge": 100
+        }
+      }
+    ],
+    "tbl_combat_character_action": [
+      {
+        "rowId": "row_action_ritsu_normal",
+        "cells": {
+          "col_combat_character_action_id": 2050001,
+          "col_combat_character_action_character_id": 2040001,
+          "col_combat_character_action_name": "일반공격",
+          "col_combat_character_action_action_type": "NormalAttack",
+          "col_combat_character_action_target_type": "EnemySingle",
+          "col_combat_character_action_ap_cost": 1,
+          "col_combat_character_action_cooldown_round": 0,
+          "col_combat_character_action_hp_power": 100,
+          "col_combat_character_action_break_power": 20,
+          "col_combat_character_action_ultimate_gauge_gain": 10,
+          "col_combat_character_action_cancels_current_enemy_action": false,
+          "col_combat_character_action_is_implemented": true,
+          "col_combat_character_action_unity_action_key": "RitsuNormalAttack"
+        }
+      },
+      {
+        "rowId": "row_action_ritsu_skill",
+        "cells": {
+          "col_combat_character_action_id": 2050002,
+          "col_combat_character_action_character_id": 2040001,
+          "col_combat_character_action_name": "경계 조정",
+          "col_combat_character_action_action_type": "SkillAttack",
+          "col_combat_character_action_target_type": "EnemySingle",
+          "col_combat_character_action_ap_cost": 1,
+          "col_combat_character_action_cooldown_round": 3,
+          "col_combat_character_action_hp_power": 165,
+          "col_combat_character_action_break_power": 45,
+          "col_combat_character_action_ultimate_gauge_gain": 15,
+          "col_combat_character_action_cancels_current_enemy_action": false,
+          "col_combat_character_action_is_implemented": true,
+          "col_combat_character_action_unity_action_key": "RitsuSkillAttack"
+        }
+      },
+      {
+        "rowId": "row_action_ritsu_swap",
+        "cells": {
+          "col_combat_character_action_id": 2050003,
+          "col_combat_character_action_character_id": 2040001,
+          "col_combat_character_action_name": "교대 공격",
+          "col_combat_character_action_action_type": "SwapAttack",
+          "col_combat_character_action_target_type": "EnemySingle",
+          "col_combat_character_action_ap_cost": 1,
+          "col_combat_character_action_cooldown_round": 0,
+          "col_combat_character_action_hp_power": 110,
+          "col_combat_character_action_break_power": 25,
+          "col_combat_character_action_ultimate_gauge_gain": 10,
+          "col_combat_character_action_cancels_current_enemy_action": false,
+          "col_combat_character_action_is_implemented": false,
+          "col_combat_character_action_unity_action_key": "RitsuSwapAttack"
+        }
+      },
+      {
+        "rowId": "row_action_ritsu_response",
+        "cells": {
+          "col_combat_character_action_id": 2050004,
+          "col_combat_character_action_character_id": 2040001,
+          "col_combat_character_action_name": "회피",
+          "col_combat_character_action_action_type": "Response",
+          "col_combat_character_action_target_type": "Self",
+          "col_combat_character_action_ap_cost": 1,
+          "col_combat_character_action_cooldown_round": 0,
+          "col_combat_character_action_hp_power": 0,
+          "col_combat_character_action_break_power": 0,
+          "col_combat_character_action_ultimate_gauge_gain": 0,
+          "col_combat_character_action_cancels_current_enemy_action": true,
+          "col_combat_character_action_is_implemented": true,
+          "col_combat_character_action_unity_action_key": "RitsuResponse"
+        }
+      },
+      {
+        "rowId": "row_action_ritsu_ultimate",
+        "cells": {
+          "col_combat_character_action_id": 2050005,
+          "col_combat_character_action_character_id": 2040001,
+          "col_combat_character_action_name": "영지선언",
+          "col_combat_character_action_action_type": "Ultimate",
+          "col_combat_character_action_target_type": "EnemySingle",
+          "col_combat_character_action_ap_cost": 1,
+          "col_combat_character_action_cooldown_round": 0,
+          "col_combat_character_action_hp_power": 320,
+          "col_combat_character_action_break_power": 90,
+          "col_combat_character_action_ultimate_gauge_gain": 0,
+          "col_combat_character_action_cancels_current_enemy_action": false,
+          "col_combat_character_action_is_implemented": true,
+          "col_combat_character_action_unity_action_key": "RitsuUltimate"
+        }
+      }
+    ],
+    "tbl_combat_boss": [
+      {
+        "rowId": "row_boss_case001",
+        "cells": {
+          "col_combat_boss_id": 2060001,
+          "col_combat_boss_name": "영지 결정에 불복하는 마법사 A",
+          "col_combat_boss_hp_per_bar": 1000,
+          "col_combat_boss_hp_bar_count": 2,
+          "col_combat_boss_break_gauge_max": 300,
+          "col_combat_boss_hfsm_controller_key": "BossCase001Hfsm"
+        }
+      }
+    ],
+    "tbl_combat_boss_action": [
+      {
+        "rowId": "row_boss_action_magic_bolt",
+        "cells": {
+          "col_combat_boss_action_id": 2070001,
+          "col_combat_boss_action_boss_id": 2060001,
+          "col_combat_boss_action_name": "마력탄",
+          "col_combat_boss_action_telegraph_type": "Single",
+          "col_combat_boss_action_target_type": "PlayerSingle",
+          "col_combat_boss_action_hp_power": 120,
+          "col_combat_boss_action_response_window_ms": 850,
+          "col_combat_boss_action_selection_weight": 50,
+          "col_combat_boss_action_unity_action_key": "BossMagicBolt"
+        }
+      },
+      {
+        "rowId": "row_boss_action_magic_volley",
+        "cells": {
+          "col_combat_boss_action_id": 2070002,
+          "col_combat_boss_action_boss_id": 2060001,
+          "col_combat_boss_action_name": "연속 마력탄",
+          "col_combat_boss_action_telegraph_type": "Single",
+          "col_combat_boss_action_target_type": "PlayerSingle",
+          "col_combat_boss_action_hp_power": 155,
+          "col_combat_boss_action_response_window_ms": 700,
+          "col_combat_boss_action_selection_weight": 30,
+          "col_combat_boss_action_unity_action_key": "BossMagicVolley"
+        }
+      },
+      {
+        "rowId": "row_boss_action_magic_burst",
+        "cells": {
+          "col_combat_boss_action_id": 2070003,
+          "col_combat_boss_action_boss_id": 2060001,
+          "col_combat_boss_action_name": "광역 마력 폭발",
+          "col_combat_boss_action_telegraph_type": "Wide",
+          "col_combat_boss_action_target_type": "PlayerAll",
+          "col_combat_boss_action_hp_power": 95,
+          "col_combat_boss_action_response_window_ms": 950,
+          "col_combat_boss_action_selection_weight": 20,
+          "col_combat_boss_action_unity_action_key": "BossMagicBurst"
+        }
+      }
+    ]
+  },
+  "workbookViews": {},
+  "migrationState": {
+    "pending": [],
+    "unresolvedRows": []
+  },
+  "auditLog": []
+}

@@ -1,0 +1,674 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Game Schema Workbench UX Reset Proposal</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #172033;
+      --muted: #607086;
+      --line: #cfd8e3;
+      --soft: #f5f7fa;
+      --panel: #ffffff;
+      --blue: #1e5d8f;
+      --green: #2c6b4f;
+      --amber: #9a6b05;
+      --coral: #ad4d3b;
+      --violet: #6f4ca2;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Malgun Gothic", "Segoe UI", Arial, sans-serif;
+      color: var(--ink);
+      background: #e9edf2;
+    }
+
+    main {
+      display: grid;
+      gap: 28px;
+      padding: 28px;
+    }
+
+    .screen {
+      width: 1440px;
+      height: 900px;
+      overflow: hidden;
+      background: var(--soft);
+      border: 1px solid #b9c4d2;
+      box-shadow: 0 18px 40px rgba(18, 29, 45, 0.16);
+    }
+
+    .label {
+      height: 42px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 0 20px;
+      background: #222b39;
+      color: #fff;
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .label span {
+      color: #b9c4d2;
+      font-weight: 400;
+    }
+
+    .app {
+      height: calc(100% - 42px);
+      display: grid;
+      grid-template-rows: 54px 46px 1fr;
+      background: #f6f8fb;
+    }
+
+    .menubar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 18px;
+      border-bottom: 1px solid var(--line);
+      background: #ffffff;
+    }
+
+    .menus, .mode-tabs, .actions, .mini-tabs {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .menu {
+      padding: 7px 9px;
+      font-size: 13px;
+      color: #2f3b4d;
+    }
+
+    .project-name {
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .ribbon {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 18px;
+      border-bottom: 1px solid var(--line);
+      background: #fbfcfe;
+    }
+
+    .button {
+      height: 30px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0 11px;
+      border: 1px solid #b9c7d7;
+      border-radius: 6px;
+      background: #fff;
+      font-size: 13px;
+      font-weight: 700;
+      color: #233047;
+    }
+
+    .button.primary {
+      border-color: #164c76;
+      background: var(--blue);
+      color: #fff;
+    }
+
+    .button.green {
+      border-color: #1f5b40;
+      background: var(--green);
+      color: #fff;
+    }
+
+    .button.warn {
+      border-color: #8c5d03;
+      background: #fff7de;
+      color: #614100;
+    }
+
+    .tab {
+      height: 30px;
+      display: inline-flex;
+      align-items: center;
+      padding: 0 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #405066;
+    }
+
+    .tab.active {
+      color: #fff;
+      background: #233047;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: 244px 1fr 304px;
+      min-height: 0;
+    }
+
+    .workspace.canvas-first {
+      grid-template-columns: 1fr 312px;
+    }
+
+    .sidebar, .inspector, .bottom, .dock, .wizard, .preview-side {
+      background: #fff;
+      border-color: var(--line);
+    }
+
+    .sidebar {
+      border-right: 1px solid var(--line);
+      padding: 14px;
+    }
+
+    .inspector {
+      border-left: 1px solid var(--line);
+      padding: 14px;
+    }
+
+    .section-title {
+      margin: 0 0 10px;
+      font-size: 13px;
+      font-weight: 800;
+      color: #35445a;
+    }
+
+    .tree-row, .prop-row, .mapping-row, .line-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 30px;
+      padding: 0 8px;
+      border-radius: 5px;
+      font-size: 13px;
+    }
+
+    .tree-row.active {
+      background: #dfeee8;
+      color: #174c35;
+      font-weight: 800;
+    }
+
+    .canvas {
+      position: relative;
+      overflow: hidden;
+      background-image: radial-gradient(#d7dee8 1px, transparent 1px);
+      background-size: 18px 18px;
+      min-height: 0;
+    }
+
+    .canvas-toolbar {
+      position: absolute;
+      z-index: 5;
+      left: 16px;
+      top: 14px;
+      display: flex;
+      gap: 8px;
+      padding: 8px;
+      background: rgba(255, 255, 255, 0.92);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    .node {
+      position: absolute;
+      width: 210px;
+      border: 1px solid #aebbd0;
+      border-radius: 7px;
+      background: #fff;
+      box-shadow: 0 8px 18px rgba(32, 45, 65, 0.12);
+      overflow: hidden;
+    }
+
+    .node .head {
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 9px;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 800;
+      background: var(--blue);
+    }
+
+    .node.green .head { background: var(--green); }
+    .node.amber .head { background: var(--amber); }
+    .node.coral .head { background: var(--coral); }
+    .node.violet .head { background: var(--violet); }
+
+    .col {
+      display: grid;
+      grid-template-columns: 38px 1fr 58px;
+      align-items: center;
+      height: 28px;
+      padding: 0 8px;
+      border-top: 1px solid #e2e8f0;
+      font-size: 12px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px;
+      height: 16px;
+      border-radius: 3px;
+      background: #cc6b16;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 800;
+    }
+
+    .badge.fk { background: #1f5d91; }
+    .badge.ref { background: #2d6b50; }
+
+    .ghost-input {
+      height: 24px;
+      display: flex;
+      align-items: center;
+      padding: 0 6px;
+      border: 1px dashed #9eb0c5;
+      border-radius: 4px;
+      background: #fafdff;
+      color: #324258;
+      font-size: 12px;
+    }
+
+    .line {
+      position: absolute;
+      height: 2px;
+      transform-origin: left center;
+      background: #6f4ca2;
+    }
+
+    .line:after {
+      content: "";
+      position: absolute;
+      right: -5px;
+      top: -4px;
+      border-left: 7px solid #6f4ca2;
+      border-top: 5px solid transparent;
+      border-bottom: 5px solid transparent;
+    }
+
+    .bottom {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      border-top: 1px solid var(--line);
+      color: #41536a;
+      font-size: 13px;
+    }
+
+    .field {
+      display: grid;
+      gap: 5px;
+      margin-bottom: 10px;
+    }
+
+    .field label {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .input {
+      height: 30px;
+      padding: 0 8px;
+      border: 1px solid #b9c6d6;
+      border-radius: 5px;
+      background: #fff;
+      font-size: 13px;
+    }
+
+    .seg {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 4px;
+      padding: 4px;
+      border: 1px solid #cbd6e3;
+      border-radius: 7px;
+      background: #f4f7fb;
+    }
+
+    .seg span {
+      text-align: center;
+      padding: 6px;
+      border-radius: 5px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .seg .on {
+      background: #fff;
+      color: var(--blue);
+      box-shadow: 0 1px 2px rgba(20, 35, 55, 0.13);
+    }
+
+    .spreadsheet {
+      display: grid;
+      grid-template-columns: 244px 1fr;
+      min-height: 0;
+    }
+
+    .grid-area {
+      display: grid;
+      grid-template-rows: 58px 1fr 44px;
+      min-width: 0;
+    }
+
+    .grid-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 18px;
+      border-bottom: 1px solid var(--line);
+      background: #fff;
+    }
+
+    .sheet {
+      overflow: hidden;
+      background: #fff;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    th {
+      height: 34px;
+      text-align: left;
+      padding: 0 8px;
+      border-right: 1px solid #d8e0ea;
+      border-bottom: 1px solid #b8c4d2;
+      background: #eef3f8;
+      color: #2d3d52;
+    }
+
+    td {
+      height: 32px;
+      padding: 0 8px;
+      border-right: 1px solid #e0e6ee;
+      border-bottom: 1px solid #e4e9f0;
+      background: #fff;
+    }
+
+    td.active-cell {
+      outline: 2px solid var(--blue);
+      outline-offset: -2px;
+      background: #f7fbff;
+    }
+
+    td.error-cell {
+      background: #fff1ee;
+      box-shadow: inset 3px 0 0 var(--coral);
+    }
+
+    .statusbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      border-top: 1px solid var(--line);
+      background: #fbfcfe;
+      font-size: 12px;
+      color: #52647b;
+    }
+
+    .split {
+      display: grid;
+      grid-template-columns: 52% 48%;
+      min-height: 0;
+    }
+
+    .mini-canvas {
+      position: relative;
+      overflow: hidden;
+      background-image: radial-gradient(#d7dee8 1px, transparent 1px);
+      background-size: 18px 18px;
+    }
+
+    .mini-node {
+      position: absolute;
+      width: 180px;
+      border: 1px solid #b2bfd0;
+      border-radius: 7px;
+      background: #fff;
+      overflow: hidden;
+    }
+
+    .mini-node strong {
+      display: block;
+      padding: 8px;
+      color: #fff;
+      background: var(--green);
+      font-size: 12px;
+    }
+
+    .wizard-layout {
+      display: grid;
+      grid-template-columns: 250px 1fr 328px;
+      min-height: 0;
+    }
+
+    .steps {
+      padding: 18px;
+      border-right: 1px solid var(--line);
+      background: #fff;
+    }
+
+    .step {
+      min-height: 42px;
+      padding: 9px 10px;
+      margin-bottom: 8px;
+      border-left: 3px solid #cbd6e2;
+      color: #526176;
+      font-size: 13px;
+    }
+
+    .step.on {
+      border-color: var(--blue);
+      background: #eef6fc;
+      color: #1d4f78;
+      font-weight: 800;
+    }
+
+    .wizard {
+      padding: 18px;
+      min-width: 0;
+    }
+
+    .mapping-row {
+      height: 40px;
+      margin-bottom: 8px;
+      border: 1px solid #dae2ec;
+      background: #fff;
+    }
+
+    .mapping-row.problem {
+      border-color: #e0a69a;
+      background: #fff3ef;
+    }
+
+    .preview-side {
+      padding: 18px;
+      border-left: 1px solid var(--line);
+    }
+
+    .callout {
+      padding: 12px;
+      border: 1px solid #e1c067;
+      border-radius: 7px;
+      background: #fff8df;
+      font-size: 13px;
+      color: #5b4108;
+    }
+
+    .empty-guide {
+      position: absolute;
+      left: 50%;
+      top: 48%;
+      width: 430px;
+      transform: translate(-50%, -50%);
+      padding: 24px;
+      border: 1px solid #c9d4e2;
+      border-radius: 8px;
+      background: #fff;
+      box-shadow: 0 12px 28px rgba(24, 39, 60, 0.12);
+    }
+
+    .empty-guide h2 {
+      margin: 0 0 8px;
+      font-size: 22px;
+    }
+
+    .empty-guide p {
+      margin: 0 0 18px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="screen" data-shot="structure-a">
+      <div class="label">대안 A · 구조 설계 <span>작업 리본 + 3분할 워크벤치</span></div>
+      <div class="app">
+        <div class="menubar">
+          <div class="menus"><span class="menu">파일</span><span class="menu">편집</span><span class="menu">보기</span><span class="menu">고급</span></div>
+          <div class="project-name">Crowd System Workbench</div>
+        </div>
+        <div class="ribbon">
+          <div class="actions"><span class="button primary">새 테이블</span><span class="button">CSV 가져오기</span><span class="button">Undo</span><span class="button">Redo</span><span class="button warn">검증</span><span class="button">AI 검토</span><span class="button green">CSV 내보내기</span></div>
+          <div class="mode-tabs"><span class="tab active">구조 설계</span><span class="tab">데이터 편집</span><span class="tab">런타임 출력</span></div>
+        </div>
+        <div class="workspace">
+          <aside class="sidebar">
+            <p class="section-title">프로젝트 탐색기</p>
+            <div class="tree-row active"><span>Tables</span><strong>11</strong></div>
+            <div class="tree-row"><span>CrowdZone</span><small>2 rows</small></div>
+            <div class="tree-row"><span>CrowdReactionRule</span><small>2 rows</small></div>
+            <div class="tree-row"><span>Animation</span><small>0 rows</small></div>
+            <div class="tree-row"><span>Enums</span><small>1</small></div>
+            <div class="tree-row"><span>Runtime Exports</span><small>1</small></div>
+          </aside>
+          <section class="canvas">
+            <div class="canvas-toolbar"><span class="button">맞춤</span><span class="button">자동 정렬</span><span class="button">관계만 강조</span></div>
+            <div class="node" style="left:120px;top:112px"><div class="head"><span>CrowdZone</span><small>runtime</small></div><div class="col"><span class="badge">PK</span><span>ZoneId</span><small>string</small></div><div class="col"><span></span><span>Capacity</span><small>int32</small></div><div class="col"><span class="badge fk">FK</span><span>ReactionProfileId</span><small>string</small></div><div class="col"><span></span><span class="ghost-input">+ 컬럼 추가</span><small></small></div></div>
+            <div class="node green" style="left:438px;top:112px"><div class="head"><span>CrowdReactionProfile</span><small>table</small></div><div class="col"><span class="badge">PK</span><span>ProfileId</span><small>string</small></div><div class="col"><span></span><span>DisplayName</span><small>string</small></div></div>
+            <div class="node violet" style="left:650px;top:112px"><div class="head"><span>CrowdReactionRule</span><small>table</small></div><div class="col"><span class="badge">PK</span><span>RuleId</span><small>string</small></div><div class="col"><span class="badge fk">FK</span><span>ProfileId</span><small>string</small></div><div class="col"><span class="badge fk">FK</span><span>EventTypeId</span><small>string</small></div><div class="col"><span></span><span>Priority</span><small>int32</small></div></div>
+            <div class="node amber" style="left:460px;top:374px"><div class="head"><span>EventType</span><small>lookup</small></div><div class="col"><span class="badge">PK</span><span>EventTypeId</span><small>string</small></div><div class="col"><span></span><span>DisplayName</span><small>string</small></div></div>
+            <div class="line" style="left:330px;top:202px;width:120px;transform:rotate(-22deg)"></div>
+            <div class="line" style="left:650px;top:173px;width:12px;transform:rotate(0deg)"></div>
+            <div class="line" style="left:590px;top:224px;width:112px;transform:rotate(128deg)"></div>
+            <div class="bottom"><span>문제 없음 · 변경 대기 없음</span><span>하단 패널은 필요한 때만 펼침</span></div>
+          </section>
+          <aside class="inspector">
+            <p class="section-title">속성 Inspector</p>
+            <div class="field"><label>선택 테이블</label><div class="input">CrowdReactionRule</div></div>
+            <div class="field"><label>설명</label><div class="input">프로필별 반응 규칙</div></div>
+            <div class="seg"><span class="on">Table</span><span>Column</span></div>
+            <div class="prop-row"><span>PK</span><strong>RuleId</strong></div>
+            <div class="prop-row"><span>관계</span><strong>2 FK</strong></div>
+            <div class="prop-row"><span>출력 포함</span><strong>예</strong></div>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" data-shot="structure-b">
+      <div class="label">대안 B · 구조 설계 <span>캔버스 우선 + 플로팅 작업 독</span></div>
+      <div class="app">
+        <div class="menubar"><div class="menus"><span class="menu">파일</span><span class="menu">편집</span><span class="menu">보기</span></div><div class="project-name">Crowd System Workbench</div></div>
+        <div class="ribbon"><div class="mode-tabs"><span class="tab active">구조 설계</span><span class="tab">데이터 편집</span><span class="tab">런타임 출력</span></div><div class="actions"><span class="button primary">새 테이블</span><span class="button">연결 모드</span><span class="button">검증</span></div></div>
+        <div class="workspace canvas-first">
+          <section class="canvas">
+            <div class="dock" style="position:absolute;left:22px;top:22px;z-index:4;padding:10px;border:1px solid var(--line);border-radius:8px;display:grid;gap:8px"><span class="button primary">새 테이블</span><span class="button">CSV 가져오기</span><span class="button">자동 정렬</span><span class="button">검색</span></div>
+            <div class="node" style="left:180px;top:112px"><div class="head"><span>CrowdZone</span><small>drag</small></div><div class="col"><span class="badge">PK</span><span>ZoneId</span><small>string</small></div><div class="col"><span class="badge fk">FK</span><span>ReactionProfileId</span><small>string</small></div></div>
+            <div class="node green" style="left:546px;top:118px"><div class="head"><span>CrowdReactionProfile</span><small>drag</small></div><div class="col"><span class="badge">PK</span><span>ProfileId</span><small>string</small></div><div class="col"><span></span><span>DisplayName</span><small>string</small></div></div>
+            <div class="node violet" style="left:890px;top:246px"><div class="head"><span>CrowdReactionRule</span><small>editing</small></div><div class="col"><span class="badge">PK</span><span>RuleId</span><small>string</small></div><div class="col"><span class="badge fk">FK</span><span>ProfileId</span><small>string</small></div><div class="col"><span></span><span class="ghost-input">+ 컬럼</span><small></small></div></div>
+            <div class="node amber" style="left:548px;top:432px"><div class="head"><span>EventType</span><small>lookup</small></div><div class="col"><span class="badge">PK</span><span>EventTypeId</span><small>string</small></div></div>
+            <div class="line" style="left:390px;top:172px;width:170px;transform:rotate(0deg)"></div>
+            <div class="line" style="left:754px;top:180px;width:170px;transform:rotate(28deg)"></div>
+            <div class="line" style="left:723px;top:462px;width:190px;transform:rotate(-32deg)"></div>
+            <div class="empty-guide" style="left:52%;top:77%;width:390px"><h2>캔버스에서 바로 편집</h2><p>테이블을 끌어 배치하고, 컬럼 행을 더블클릭해 이름과 타입을 즉시 바꿉니다.</p><div class="actions"><span class="button">관계 미리보기</span><span class="button green">적용</span></div></div>
+          </section>
+          <aside class="inspector"><p class="section-title">컨텍스트 패널</p><div class="field"><label>현재 선택</label><div class="input">CrowdReactionRule.ProfileId</div></div><div class="prop-row"><span>역할</span><strong>FK</strong></div><div class="prop-row"><span>대상</span><strong>ProfileId</strong></div><div class="callout">캔버스 중심이라 넓은 스키마 탐색은 빠르지만, 초보자는 작업 시작점을 더 찾기 어려울 수 있습니다.</div></aside>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" data-shot="data-a">
+      <div class="label">대안 A · 데이터 편집 <span>Excel형 단일 테이블 집중 화면</span></div>
+      <div class="app">
+        <div class="menubar"><div class="menus"><span class="menu">파일</span><span class="menu">편집</span><span class="menu">보기</span></div><div class="project-name">CrowdReactionRule 데이터</div></div>
+        <div class="ribbon"><div class="actions"><span class="button">행 추가</span><span class="button">행 복제</span><span class="button">삭제</span><span class="button">붙여넣기</span><span class="button warn">검증</span><span class="button green">CSV 내보내기</span></div><div class="mode-tabs"><span class="tab">구조 설계</span><span class="tab active">데이터 편집</span><span class="tab">런타임 출력</span></div></div>
+        <div class="spreadsheet">
+          <aside class="sidebar"><p class="section-title">테이블</p><div class="tree-row">CrowdZone <small>2</small></div><div class="tree-row active">CrowdReactionRule <small>2</small></div><div class="tree-row">EventType <small>0</small></div><div class="tree-row">Animation <small>0</small></div></aside>
+          <section class="grid-area">
+            <div class="grid-head"><strong>CrowdReactionRule · 2행 · 10컬럼 · 오류 1개</strong><div class="actions"><span class="button">필터</span><span class="button">정렬</span><span class="button">컬럼 고정</span></div></div>
+            <div class="sheet"><table><thead><tr><th>RuleId PK</th><th>ProfileId FK</th><th>EventTypeId FK</th><th>AudienceSide</th><th>ParticipationRate</th><th>Priority</th></tr></thead><tbody><tr><td>goal_home_high</td><td>profile_home_default</td><td>goal</td><td>Home</td><td>0.95</td><td>100</td></tr><tr><td>foul_against_home</td><td>profile_home_default</td><td>foul</td><td>Home</td><td>0.72</td><td class="active-cell">60</td></tr><tr><td class="error-cell">new_rule</td><td>profile_missing</td><td>goal</td><td>Home</td><td>1.2</td><td>80</td></tr></tbody></table></div>
+            <div class="statusbar"><span>선택 1셀 · 복사 가능 · 붙여넣기 대상 1행</span><span>오류 셀 클릭 시 하단 문제 패널 펼침</span></div>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" data-shot="data-b">
+      <div class="label">대안 B · 데이터 편집 <span>구조와 데이터 동시 확인 Split View</span></div>
+      <div class="app">
+        <div class="menubar"><div class="menus"><span class="menu">파일</span><span class="menu">편집</span><span class="menu">보기</span></div><div class="project-name">Crowd System Workbench</div></div>
+        <div class="ribbon"><div class="actions"><span class="button">행 추가</span><span class="button">CSV 가져오기</span><span class="button green">CSV 내보내기</span></div><div class="mode-tabs"><span class="tab">구조 설계</span><span class="tab active">데이터 편집</span><span class="tab">런타임 출력</span></div></div>
+        <div class="split">
+          <section class="mini-canvas"><div class="mini-node" style="left:80px;top:96px"><strong>CrowdZone</strong><div class="col"><span class="badge">PK</span><span>ZoneId</span><small></small></div></div><div class="mini-node" style="left:322px;top:96px"><strong>CrowdReactionProfile</strong><div class="col"><span class="badge">PK</span><span>ProfileId</span><small></small></div></div><div class="mini-node" style="left:260px;top:308px;border-color:#6f4ca2"><strong style="background:var(--violet)">CrowdReactionRule</strong><div class="col"><span class="badge">PK</span><span>RuleId</span><small></small></div><div class="col"><span class="badge fk">FK</span><span>ProfileId</span><small></small></div></div><div class="line" style="left:260px;top:138px;width:70px;transform:rotate(0deg)"></div><div class="bottom"><span>선택한 테이블이 오른쪽 그리드와 연결됨</span></div></section>
+          <section class="grid-area"><div class="grid-head"><strong>CrowdReactionRule 데이터</strong><div class="actions"><span class="button">오류만</span><span class="button">관계 따라가기</span></div></div><div class="sheet"><table><thead><tr><th>RuleId</th><th>ProfileId</th><th>EventTypeId</th><th>Priority</th></tr></thead><tbody><tr><td>goal_home_high</td><td>profile_home_default</td><td>goal</td><td>100</td></tr><tr><td>foul_against_home</td><td>profile_home_default</td><td>foul</td><td>60</td></tr><tr><td class="active-cell">new_rule</td><td class="error-cell">profile_missing</td><td>goal</td><td>80</td></tr></tbody></table></div><div class="statusbar"><span>구조 맥락은 좋지만 행 밀도는 A보다 낮음</span><span>선택 1행</span></div></section>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" data-shot="csv-a">
+      <div class="label">대안 A · CSV 가져오기 <span>4단계 Wizard</span></div>
+      <div class="app">
+        <div class="menubar"><div class="menus"><span class="menu">파일</span><span class="menu">CSV 가져오기</span></div><div class="project-name">CSV Import Wizard</div></div>
+        <div class="ribbon"><div class="actions"><span class="button">파일 선택</span><span class="button">대상 테이블 선택</span><span class="button warn">검증</span><span class="button green">적용</span></div><div class="mode-tabs"><span class="tab active">매핑 미리보기</span></div></div>
+        <div class="wizard-layout">
+          <aside class="steps"><div class="step on">1. 파일과 대상</div><div class="step on">2. 헤더 매핑</div><div class="step">3. 데이터 미리보기</div><div class="step">4. 적용</div></aside>
+          <section class="wizard"><p class="section-title">헤더를 스키마 컬럼에 매핑</p><div class="mapping-row"><span>RuleId</span><strong>column_rule_id</strong></div><div class="mapping-row"><span>ProfileId</span><strong>column_rule_profile_id</strong></div><div class="mapping-row"><span>EventTypeId</span><strong>column_event_type_id</strong></div><div class="mapping-row problem"><span>PriorityLevel</span><strong>매칭 없음</strong></div><div class="callout">알 수 없는 헤더는 자동 적용하지 않습니다. 사용자가 컬럼을 만들거나 명시 매핑해야 합니다.</div></section>
+          <aside class="preview-side"><p class="section-title">미리보기</p><table><thead><tr><th>RuleId</th><th>ProfileId</th><th>Priority</th></tr></thead><tbody><tr><td>goal_home_high</td><td>profile_home_default</td><td>100</td></tr><tr><td>foul_against_home</td><td>profile_home_default</td><td>60</td></tr></tbody></table><div style="height:14px"></div><span class="button green">문제 해결 후 적용</span></aside>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" data-shot="csv-b">
+      <div class="label">대안 B · CSV 가져오기 <span>전체 Import Workspace</span></div>
+      <div class="app">
+        <div class="menubar"><div class="menus"><span class="menu">파일</span><span class="menu">가져오기</span><span class="menu">고급</span></div><div class="project-name">CSV Import Workspace</div></div>
+        <div class="ribbon"><div class="actions"><span class="button primary">새 테이블로 가져오기</span><span class="button">기존 테이블에 병합</span><span class="button">매핑 저장</span><span class="button green">적용</span></div><div class="mode-tabs"><span class="tab active">CSV 가져오기</span></div></div>
+        <div class="workspace">
+          <aside class="sidebar"><p class="section-title">소스</p><div class="field"><label>파일</label><div class="input">crowd_rules.csv</div></div><div class="field"><label>대상</label><div class="input">CrowdReactionRule</div></div><div class="tree-row active"><span>헤더 10개</span><strong>9 OK</strong></div><div class="tree-row"><span>행 240개</span><small>3 warnings</small></div></aside>
+          <section class="wizard"><p class="section-title">스키마 추론과 데이터 미리보기</p><table><thead><tr><th>CSV Header</th><th>Mapped ColumnId</th><th>Type</th><th>Status</th></tr></thead><tbody><tr><td>RuleId</td><td>column_rule_id</td><td>string</td><td>OK</td></tr><tr><td>ProfileId</td><td>column_rule_profile_id</td><td>string</td><td>OK</td></tr><tr><td>PriorityLevel</td><td>-</td><td>int32?</td><td class="error-cell">Needs mapping</td></tr></tbody></table><div style="height:20px"></div><table><thead><tr><th>RuleId</th><th>ProfileId</th><th>PriorityLevel</th></tr></thead><tbody><tr><td>goal_home_high</td><td>profile_home_default</td><td>100</td></tr><tr><td>foul_against_home</td><td>profile_home_default</td><td>60</td></tr></tbody></table></section>
+          <aside class="inspector"><p class="section-title">적용 영향</p><div class="prop-row"><span>새 행</span><strong>240</strong></div><div class="prop-row"><span>변경 컬럼</span><strong>0</strong></div><div class="prop-row"><span>차단 문제</span><strong>1</strong></div><div class="callout">대량 CSV 작업에는 강하지만, 첫 사용자의 기본 흐름으로는 A보다 무겁습니다.</div></aside>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

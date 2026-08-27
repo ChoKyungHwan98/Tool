@@ -1,0 +1,32 @@
+{
+  "color": {
+    "surface": "#f8fafc",
+    "surfaceRaised": "#ffffff",
+    "canvas": "#f1f5f9",
+    "border": "#cbd5e1",
+    "text": "#16202e",
+    "muted": "#64748b",
+    "primary": "#1f5f77",
+    "success": "#4f7f74",
+    "warning": "#d9a441",
+    "danger": "#b94d4d",
+    "code": "#17202c"
+  },
+  "radius": {
+    "sm": 5,
+    "md": 7,
+    "lg": 8
+  },
+  "space": {
+    "xs": 4,
+    "sm": 8,
+    "md": 12,
+    "lg": 16,
+    "xl": 24
+  },
+  "panel": {
+    "explorerWidth": 264,
+    "inspectorWidth": 330,
+    "bottomHeight": 250
+  }
+}

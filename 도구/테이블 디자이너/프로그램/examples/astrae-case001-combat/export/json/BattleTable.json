@@ -1,0 +1,38 @@
+[
+  {
+    "id": 2030001,
+    "caseDifficultyId": 1050001,
+    "battleType": "Boss",
+    "combatRuleId": 2010001,
+    "bossId": 2060001,
+    "bossHpMultiplier": 0.8,
+    "bossDamageMultiplier": 0.85,
+    "breakGaugeMultiplier": 0.85,
+    "victoryConditionType": "BossDefeat",
+    "defeatConditionType": "PartyDefeat"
+  },
+  {
+    "id": 2030002,
+    "caseDifficultyId": 1050002,
+    "battleType": "Boss",
+    "combatRuleId": 2010001,
+    "bossId": 2060001,
+    "bossHpMultiplier": 1,
+    "bossDamageMultiplier": 1,
+    "breakGaugeMultiplier": 1,
+    "victoryConditionType": "BossDefeat",
+    "defeatConditionType": "PartyDefeat"
+  },
+  {
+    "id": 2030003,
+    "caseDifficultyId": 1050003,
+    "battleType": "Boss",
+    "combatRuleId": 2010001,
+    "bossId": 2060001,
+    "bossHpMultiplier": 1.35,
+    "bossDamageMultiplier": 1.25,
+    "breakGaugeMultiplier": 1.2,
+    "victoryConditionType": "BossDefeat",
+    "defeatConditionType": "PartyDefeat"
+  }
+]

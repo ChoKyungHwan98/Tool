@@ -1,0 +1,30 @@
+:root {
+  --app-bg: #eef2f6;
+  --app-panel: #fbfcfd;
+  --app-panel-strong: #ffffff;
+  --app-border: #cbd5df;
+  --app-border-soft: #dfe5eb;
+  --app-text: #182638;
+  --app-muted: #607186;
+  --app-subtle: #f1f4f7;
+  --app-subtle-strong: #e4eaf0;
+  --app-primary: #116a7a;
+  --app-primary-strong: #0d5665;
+  --app-primary-soft: #dceff0;
+  --app-accent: #a85b0d;
+  --app-selection: #2f72b7;
+  --app-pk: #a85b0d;
+  --app-fk: #24689f;
+  --app-ref: #32704c;
+  --app-danger: #b94646;
+  --app-warning: #9a701d;
+  --shadow-soft: 0 1px 2px rgba(15, 23, 42, 0.08), 0 10px 28px rgba(15, 23, 42, 0.06);
+  --shadow-card: 0 1px 2px rgba(15, 23, 42, 0.12), 0 8px 18px rgba(15, 23, 42, 0.08);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: var(--app-text);
+  background: var(--app-bg);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}

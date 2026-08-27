@@ -1,0 +1,10 @@
+[
+  {
+    "id": 2060001,
+    "name": "영지 결정에 불복하는 마법사 A",
+    "hpPerBar": 1000,
+    "hpBarCount": 2,
+    "breakGaugeMax": 300,
+    "hfsmControllerKey": "BossCase001Hfsm"
+  }
+]

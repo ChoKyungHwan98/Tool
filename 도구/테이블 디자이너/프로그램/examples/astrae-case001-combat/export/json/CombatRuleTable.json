@@ -1,0 +1,12 @@
+[
+  {
+    "id": 2010001,
+    "name": "CASE_001 공통 전투 규칙",
+    "maxPartySize": 3,
+    "turnStartAp": 3,
+    "enemyIntentCount": 3,
+    "breakTriggerType": "GaugeZero",
+    "breakEnemyActionReduction": 1,
+    "breakGaugeResetTiming": "NextTurnStart"
+  }
+]

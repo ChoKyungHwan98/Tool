@@ -1,0 +1,185 @@
+{
+  "schemaVersion": "6.2.0",
+  "sourceProject": "Astrae-Oratio-CASE001-Combat.gsw",
+  "note": "NORMAL 전투 기능 목업용 Prototype 수치다. EASY/HARD 행은 확장용으로 유지하며 현재 Unity에서 진입하지 않는다.",
+  "CombatRuleTable": [
+    {
+      "id": 2010001,
+      "name": "CASE_001 공통 전투 규칙",
+      "maxPartySize": 3,
+      "turnStartAp": 3,
+      "enemyIntentCount": 3,
+      "breakTriggerType": "GaugeZero",
+      "breakEnemyActionReduction": 1,
+      "breakGaugeResetTiming": "NextTurnStart"
+    }
+  ],
+  "BattleTable": [
+    {
+      "id": 2030001,
+      "caseDifficultyId": 1050001,
+      "battleType": "Boss",
+      "combatRuleId": 2010001,
+      "bossId": 2060001,
+      "bossHpMultiplier": 0.8,
+      "bossDamageMultiplier": 0.85,
+      "breakGaugeMultiplier": 0.85,
+      "victoryConditionType": "BossDefeat",
+      "defeatConditionType": "PartyDefeat"
+    },
+    {
+      "id": 2030002,
+      "caseDifficultyId": 1050002,
+      "battleType": "Boss",
+      "combatRuleId": 2010001,
+      "bossId": 2060001,
+      "bossHpMultiplier": 1,
+      "bossDamageMultiplier": 1,
+      "breakGaugeMultiplier": 1,
+      "victoryConditionType": "BossDefeat",
+      "defeatConditionType": "PartyDefeat"
+    },
+    {
+      "id": 2030003,
+      "caseDifficultyId": 1050003,
+      "battleType": "Boss",
+      "combatRuleId": 2010001,
+      "bossId": 2060001,
+      "bossHpMultiplier": 1.35,
+      "bossDamageMultiplier": 1.25,
+      "breakGaugeMultiplier": 1.2,
+      "victoryConditionType": "BossDefeat",
+      "defeatConditionType": "PartyDefeat"
+    }
+  ],
+  "CharacterTable": [
+    {
+      "id": 2040001,
+      "name": "마미야 리츠",
+      "maxHp": 2400,
+      "maxUltimateGauge": 100
+    }
+  ],
+  "CharacterActionTable": [
+    {
+      "id": 2050001,
+      "characterId": 2040001,
+      "name": "일반공격",
+      "actionType": "NormalAttack",
+      "targetType": "EnemySingle",
+      "apCost": 1,
+      "cooldownRound": 0,
+      "hpDamage": 100,
+      "breakDamage": 20,
+      "ultimateGaugeGain": 10,
+      "cancelsCurrentEnemyAction": false,
+      "isImplemented": true,
+      "unityActionKey": "RitsuNormalAttack"
+    },
+    {
+      "id": 2050002,
+      "characterId": 2040001,
+      "name": "경계 조정",
+      "actionType": "SkillAttack",
+      "targetType": "EnemySingle",
+      "apCost": 1,
+      "cooldownRound": 3,
+      "hpDamage": 165,
+      "breakDamage": 45,
+      "ultimateGaugeGain": 15,
+      "cancelsCurrentEnemyAction": false,
+      "isImplemented": true,
+      "unityActionKey": "RitsuSkillAttack"
+    },
+    {
+      "id": 2050003,
+      "characterId": 2040001,
+      "name": "교대 공격",
+      "actionType": "SwapAttack",
+      "targetType": "EnemySingle",
+      "apCost": 1,
+      "cooldownRound": 0,
+      "hpDamage": 110,
+      "breakDamage": 25,
+      "ultimateGaugeGain": 10,
+      "cancelsCurrentEnemyAction": false,
+      "isImplemented": false,
+      "unityActionKey": "RitsuSwapAttack"
+    },
+    {
+      "id": 2050004,
+      "characterId": 2040001,
+      "name": "회피",
+      "actionType": "Response",
+      "targetType": "Self",
+      "apCost": 1,
+      "cooldownRound": 0,
+      "hpDamage": 0,
+      "breakDamage": 0,
+      "ultimateGaugeGain": 0,
+      "cancelsCurrentEnemyAction": true,
+      "isImplemented": true,
+      "unityActionKey": "RitsuResponse"
+    },
+    {
+      "id": 2050005,
+      "characterId": 2040001,
+      "name": "영지선언",
+      "actionType": "Ultimate",
+      "targetType": "EnemySingle",
+      "apCost": 1,
+      "cooldownRound": 0,
+      "hpDamage": 320,
+      "breakDamage": 90,
+      "ultimateGaugeGain": 0,
+      "cancelsCurrentEnemyAction": false,
+      "isImplemented": true,
+      "unityActionKey": "RitsuUltimate"
+    }
+  ],
+  "BossTable": [
+    {
+      "id": 2060001,
+      "name": "영지 결정에 불복하는 마법사 A",
+      "hpPerBar": 1000,
+      "hpBarCount": 2,
+      "breakGaugeMax": 300,
+      "hfsmControllerKey": "BossCase001Hfsm"
+    }
+  ],
+  "BossActionTable": [
+    {
+      "id": 2070001,
+      "bossId": 2060001,
+      "name": "마력탄",
+      "telegraphType": "Single",
+      "targetType": "PlayerSingle",
+      "hpDamage": 120,
+      "responseWindowMs": 850,
+      "selectionWeight": 50,
+      "unityActionKey": "BossMagicBolt"
+    },
+    {
+      "id": 2070002,
+      "bossId": 2060001,
+      "name": "연속 마력탄",
+      "telegraphType": "Single",
+      "targetType": "PlayerSingle",
+      "hpDamage": 155,
+      "responseWindowMs": 700,
+      "selectionWeight": 30,
+      "unityActionKey": "BossMagicVolley"
+    },
+    {
+      "id": 2070003,
+      "bossId": 2060001,
+      "name": "광역 마력 폭발",
+      "telegraphType": "Wide",
+      "targetType": "PlayerAll",
+      "hpDamage": 95,
+      "responseWindowMs": 950,
+      "selectionWeight": 20,
+      "unityActionKey": "BossMagicBurst"
+    }
+  ]
+}

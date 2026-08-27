@@ -1,0 +1,23 @@
+[
+  {
+    "id": 1090001,
+    "caseDifficultyId": 1050001,
+    "rewardType": "CURRENCY",
+    "rewardCode": "GOLD",
+    "amount": 1
+  },
+  {
+    "id": 1090002,
+    "caseDifficultyId": 1050002,
+    "rewardType": "CURRENCY",
+    "rewardCode": "GOLD",
+    "amount": 2
+  },
+  {
+    "id": 1090003,
+    "caseDifficultyId": 1050003,
+    "rewardType": "CURRENCY",
+    "rewardCode": "GOLD",
+    "amount": 3
+  }
+]

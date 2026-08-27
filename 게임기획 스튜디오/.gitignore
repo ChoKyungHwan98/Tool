@@ -1,0 +1,9 @@
+build/
+ui/node_modules/
+ui/dist/
+*.user
+*.suo
+*.VC.db
+*.VC.VC.opendb
+.vs/
+

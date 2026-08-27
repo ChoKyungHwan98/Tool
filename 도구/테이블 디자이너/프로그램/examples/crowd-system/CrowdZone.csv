@@ -1,0 +1,3 @@
+ZoneId,Capacity,Density,SupportTeam,VisualPresetId,ReactionProfileId,DefaultStateId
+north_stand,8200,0.78,Home,preset_home_dense,profile_home_default,idle_wave
+away_corner,1800,0.64,Away,preset_away_corner,profile_away_default,idle_clap

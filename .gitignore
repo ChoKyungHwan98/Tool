@@ -1,0 +1,53 @@
+# Dependencies and package-manager caches
+**/node_modules/
+**/.pnpm-store/
+**/.yarn/
+
+# Generated builds and test output
+**/dist/
+**/dist-studio/
+**/out/
+**/coverage/
+**/.vite/
+**/target/
+**/test-results/
+**/playwright-report/
+**/qa-output/
+**/.vs/
+**/.worktrees/
+/게임기획 스튜디오/build/
+/게임기획 스튜디오/app/assets/ui/
+/도구/테이블 디자이너/프로그램/release/
+
+# Local-only configuration and credentials
+**/.env
+**/.env.*
+!**/.env.example
+**/.claude/
+**/public/local-assets/
+**/resources/ffmpeg/
+**/resources/slide-pack-*
+
+# Binaries, databases, archives, and logs
+*.exe
+*.dll
+*.pdb
+*.obj
+*.ilk
+*.lib
+*.exp
+*.msi
+*.zip
+*.7z
+*.rar
+*.db
+*.log
+*.log.*
+*.tsbuildinfo
+*.mp4
+*.webm
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+desktop.ini

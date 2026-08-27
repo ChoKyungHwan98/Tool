@@ -1,0 +1,23 @@
+[
+  {
+    "id": 1050001,
+    "caseFlowId": 1040002,
+    "difficultyType": "EASY",
+    "sortOrder": 1,
+    "isImplemented": false
+  },
+  {
+    "id": 1050002,
+    "caseFlowId": 1040002,
+    "difficultyType": "NORMAL",
+    "sortOrder": 2,
+    "isImplemented": true
+  },
+  {
+    "id": 1050003,
+    "caseFlowId": 1040002,
+    "difficultyType": "HARD",
+    "sortOrder": 3,
+    "isImplemented": false
+  }
+]

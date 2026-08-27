@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://game-schema-workbench.local/schemas/migration.schema.json",
+  "title": "Migration Plan",
+  "type": "object",
+  "required": ["planId", "summary", "affectedTableIds", "affectedColumnIds", "steps", "risks"],
+  "properties": {
+    "planId": { "type": "string" },
+    "summary": { "type": "string" },
+    "affectedTableIds": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "affectedColumnIds": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "steps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["stepId", "title", "description", "reversible"],
+        "properties": {
+          "stepId": { "type": "string" },
+          "title": { "type": "string" },
+          "description": { "type": "string" },
+          "reversible": { "type": "boolean" }
+        }
+      }
+    },
+    "risks": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  }
+}
