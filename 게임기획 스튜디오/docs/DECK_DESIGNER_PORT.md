@@ -1,4 +1,4 @@
-# 기획서 디자이너 1~5단계 이식 구조
+# PPT 디자이너 1~5단계 이식 구조
 
 ## 목적
 
@@ -12,7 +12,7 @@
 
 ## 스튜디오 전용 경계
 
-- 진입점: `도구/기획서 디자이너/프로젝트/studio`
+- 진입점: `도구/PPT 디자이너/프로젝트/studio`
 - 배포 경로: `app/assets/ui/tools/deck`
 - 스튜디오 연결: `/tools/deck/index.html?host=studio&workspaceId=...`
 - 저장: 작업공간의 네이티브 아티팩트 저장소. revision 충돌 검사, 원자적 교체, 최근 20개 백업을 사용

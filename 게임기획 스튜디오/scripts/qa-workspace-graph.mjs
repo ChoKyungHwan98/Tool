@@ -34,12 +34,14 @@ try {
   };
   await addTool('테이블 디자이너');
   await addTool('패턴 디자이너');
-  await addTool('기획서 디자이너');
+  await addTool('AI 리뷰데이터 분석');
+  await addTool('PPT 디자이너');
 
   const table = page.locator('.workspace-node').filter({ hasText: '테이블 디자이너' });
   const pattern = page.locator('.workspace-node').filter({ hasText: '패턴 디자이너' });
-  const deck = page.locator('.workspace-node').filter({ hasText: '기획서 디자이너' });
-  if (await deck.locator('.workspace-node-port').count() !== 0) throw new Error('독립 도구에 연결 포트가 표시됩니다.');
+  const review = page.locator('.workspace-node').filter({ hasText: 'AI 리뷰데이터 분석' });
+  const deck = page.locator('.workspace-node').filter({ hasText: 'PPT 디자이너' });
+  if (await deck.locator('.workspace-node-port--input').count() !== 1) throw new Error('PPT 디자이너의 리뷰 인사이트 입력 포트가 없습니다.');
 
   const output = await table.locator('.workspace-node-port--output').boundingBox();
   const input = await pattern.locator('.workspace-node-port--input').boundingBox();
@@ -50,6 +52,16 @@ try {
   await page.mouse.up();
   await page.waitForTimeout(100);
   if (await page.locator('.workspace-graph-wires g').count() !== 1) throw new Error('호환 연결이 생성되지 않았습니다.');
+
+  const reviewOutput = await review.locator('.workspace-node-port--output').boundingBox();
+  const deckInput = await deck.locator('.workspace-node-port--input').boundingBox();
+  if (!reviewOutput || !deckInput) throw new Error('AI 리뷰데이터 분석·PPT 연결 포트를 찾지 못했습니다.');
+  await page.mouse.move(reviewOutput.x + reviewOutput.width / 2, reviewOutput.y + reviewOutput.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(deckInput.x + deckInput.width / 2, deckInput.y + deckInput.height / 2, { steps: 8 });
+  await page.mouse.up();
+  await page.waitForTimeout(100);
+  if (await page.locator('.workspace-graph-wires g').count() !== 2) throw new Error('리뷰 인사이트 연결이 생성되지 않았습니다.');
   if (await page.locator('.error-toast').count() !== 0) throw new Error('정상 연결 뒤 전역 오류 토스트가 표시되었습니다.');
 
   const toolbar = page.locator('.workspace-graph-toolbar');
@@ -74,7 +86,7 @@ try {
   await toolbar.getByRole('button', { name: '연결선 숨기기' }).click();
   if (await page.locator('.workspace-graph-wires').count() !== 0) throw new Error('연결선 숨기기가 동작하지 않았습니다.');
   await toolbar.getByRole('button', { name: '연결선 표시' }).click();
-  if (await page.locator('.workspace-graph-wires g').count() !== 1) throw new Error('연결선 다시 표시가 동작하지 않았습니다.');
+  if (await page.locator('.workspace-graph-wires g').count() !== 2) throw new Error('연결선 다시 표시가 동작하지 않았습니다.');
 
   await toolbar.getByRole('button', { name: '미니맵' }).click();
   if (await page.locator('.workspace-minimap').count() !== 0) throw new Error('미니맵 숨기기가 동작하지 않았습니다.');

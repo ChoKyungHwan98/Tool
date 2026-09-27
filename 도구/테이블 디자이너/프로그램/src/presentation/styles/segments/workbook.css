@@ -23,7 +23,7 @@
   align-items: center;
   gap: 6px;
   color: #596b80;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
 }
 
@@ -46,7 +46,7 @@
   background: #ffffff;
   color: #24374d;
   font: inherit;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .find-replace-bar input:focus {
@@ -57,7 +57,7 @@
 .find-replace-bar output {
   flex: 0 0 58px;
   color: #65768a;
-  font-size: 11px;
+  font-size: 12px;
   text-align: center;
 }
 
@@ -114,7 +114,7 @@
 .hidden-columns-menu header {
   border-bottom: 1px solid #e2e8ee;
   color: #42556b;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .hidden-columns-menu button {
@@ -128,7 +128,7 @@
   background: transparent;
   color: #2c4057;
   font: inherit;
-  font-size: 11px;
+  font-size: 12px;
   cursor: pointer;
 }
 
@@ -204,7 +204,7 @@
   border-right: 1px solid #bdc9d5;
   border-bottom: 1px solid #d6dee6;
   font: inherit;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   cursor: pointer;
 }
@@ -257,8 +257,8 @@
   background: #e5eaef;
   color: #607185;
   font: inherit;
-  font-size: 11px;
-  font-weight: 750;
+  font-size: 12px;
+  font-weight: 700;
   cursor: pointer;
 }
 
@@ -328,7 +328,7 @@
 
 .spreadsheet-empty-start strong {
   color: #203249;
-  font-size: 17px;
+  font-size: 18px;
 }
 
 .spreadsheet-empty-start p {
@@ -371,7 +371,7 @@
   width: 100%;
   overflow: hidden;
   color: #667b8f;
-  font-size: 11px;
+  font-size: 12px;
   text-align: center;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -401,7 +401,7 @@
   border-top: 0;
   border-left: 0;
   font: inherit;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   cursor: pointer;
 }
@@ -466,7 +466,7 @@
   border-radius: 2px;
   background: #ffffff;
   color: #233247;
-  font-size: 11px;
+  font-size: 12px;
   line-height: 16px;
   text-align: center;
   white-space: nowrap;
@@ -602,7 +602,7 @@ body.spreadsheet-column-resizing * {
   border-top: 0;
   border-left: 0;
   font: inherit;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   cursor: grab;
 }
@@ -638,7 +638,7 @@ body.spreadsheet-column-resizing * {
   min-width: 0;
   overflow: hidden;
   color: #b33f3f;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -684,12 +684,12 @@ body.spreadsheet-column-resizing * {
 
 .command-history-popover header strong {
   color: #17263a;
-  font-size: 13.5px;
+  font-size: 14px;
 }
 
 .command-history-popover header span {
   color: var(--app-muted);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .history-close {
@@ -727,8 +727,8 @@ body.spreadsheet-column-resizing * {
 .command-history-item > span {
   grid-column: 1;
   color: var(--app-primary);
-  font-size: 11px;
-  font-weight: 750;
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .command-history-item > strong {
@@ -736,7 +736,7 @@ body.spreadsheet-column-resizing * {
   overflow: hidden;
   color: #29394d;
   font-size: 12px;
-  font-weight: 650;
+  font-weight: 600;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -746,7 +746,7 @@ body.spreadsheet-column-resizing * {
   grid-row: 1 / span 2;
   align-self: center;
   color: var(--app-muted);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .history-empty {
@@ -778,12 +778,12 @@ body.spreadsheet-column-resizing * {
 }
 
 .data-conversion-heading strong {
-  font-size: 12.5px;
+  font-size: 13px;
 }
 
 .data-conversion-heading span {
   color: var(--app-muted);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .data-conversion-plans details {
@@ -794,7 +794,7 @@ body.spreadsheet-column-resizing * {
 .data-conversion-plans summary {
   color: #263d52;
   font-size: 12px;
-  font-weight: 650;
+  font-weight: 600;
   cursor: pointer;
 }
 

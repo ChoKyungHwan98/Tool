@@ -1,1 +1,0 @@
-export { SessionDetailRightPanel } from './SessionDetailRightPanel'

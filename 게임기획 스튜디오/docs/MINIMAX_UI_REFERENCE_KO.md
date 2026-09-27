@@ -40,8 +40,10 @@
 ## 로컬 구현
 
 - 분류·검색 모델: `ui/src/toolCatalog.ts`
-- 도구 보관함·작업공간 목록: `ui/src/App.tsx`
+- 도구 보관함: `ui/src/ToolCatalogHome.tsx`
+- 작업공간 목록과 셸 전환: `ui/src/App.tsx`
 - 작업공간 도구 추가: `ui/src/WorkspaceGraph.tsx`
-- 화면 토큰·레이아웃: `ui/src/devtoys-shell.css`
+- 공통 화면 토큰·레이아웃: `ui/src/devtoys-shell.css`
+- 도구 보관함 화면: `ui/src/ToolCatalogHome.tsx`, `ui/src/catalog.css`
 - 단위 테스트: `ui/src/toolCatalog.test.ts`
 - 상호작용·스크린샷 QA: `scripts/qa-catalog-ui.mjs`

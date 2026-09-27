@@ -25,6 +25,8 @@ add_executable(GameDesignStudio WIN32
   native/OpenRouterService.h
   native/PromptLibraryStore.cpp
   native/PromptLibraryStore.h
+  native/DownloadHistory.cpp
+  native/DownloadHistory.h
 )
 
 target_compile_definitions(GameDesignStudio PRIVATE
@@ -63,6 +65,7 @@ endif()
 
 set(UI_DIST_DIR "${CMAKE_SOURCE_DIR}/ui/dist")
 add_custom_command(TARGET GameDesignStudio POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E rm -rf "$<TARGET_FILE_DIR:GameDesignStudio>/assets/ui"
   COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:GameDesignStudio>/assets/ui"
   COMMAND ${CMAKE_COMMAND} -E copy_directory "${UI_DIST_DIR}" "$<TARGET_FILE_DIR:GameDesignStudio>/assets/ui"
   COMMENT "Copying local UI assets"

@@ -1,0 +1,18 @@
+{
+  "name": "@game-presentation/authoring-harness",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@game-presentation/composition-engine": "workspace:*",
+    "@game-presentation/contracts": "workspace:*",
+    "@game-presentation/pptx-exporter": "workspace:*",
+    "@game-presentation/preference-learning": "workspace:*",
+    "@game-presentation/reference-engine": "workspace:*",
+    "@game-presentation/renderer": "workspace:*",
+    "@game-presentation/source-ingestion": "workspace:*"
+  }
+}

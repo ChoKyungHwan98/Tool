@@ -1,14 +1,11 @@
 import { FileInput, FilePlus2, FolderOpen } from 'lucide-react'
-import { RAIL_ITEMS, type DashboardSection, type RailBadgeContext } from './railItems'
+import { RAIL_ITEMS, type DashboardSection } from './railItems'
 
 export type { DashboardSection } from './railItems'
 
 export function DashboardRail({
   active,
   onSelect,
-  totalCount,
-  favoriteCount,
-  trashCount,
   onNewProject,
   desktopRuntime,
   onOpenNativeFile,
@@ -18,9 +15,6 @@ export function DashboardRail({
 }: {
   readonly active: DashboardSection
   readonly onSelect: (section: DashboardSection) => void
-  readonly totalCount: number
-  readonly favoriteCount: number
-  readonly trashCount: number
   readonly onNewProject: () => void
   readonly desktopRuntime: boolean
   readonly onOpenNativeFile: () => void
@@ -28,21 +22,18 @@ export function DashboardRail({
   readonly onStartFromDataFiles: (files: readonly File[]) => void
   readonly mobileOpen: boolean
 }) {
-  const badgeContext: RailBadgeContext = { totalCount, favoriteCount, trashCount }
-
   return (
     <nav className={mobileOpen ? 'dashboard-rail dashboard-rail--open' : 'dashboard-rail'} aria-label="워크벤치 탐색">
       <div className="dashboard-rail-brand">
-        <span className="brand-eyebrow">GAME SCHEMA</span>
-        <strong>워크벤치</strong>
+        <strong>테이블 디자이너</strong>
       </div>
 
       <div className="dashboard-rail-groups">
         {(['library', 'resource'] as const).map((group) => (
           <div className="dashboard-rail-group" key={group}>
+            <span className="dashboard-rail-group-label">{group === 'library' ? '프로젝트 관리' : '자료'}</span>
             {RAIL_ITEMS.filter((item) => item.group === group).map((item) => {
               const Icon = item.icon
-              const badgeValue = item.badge?.(badgeContext)
               return (
                 <button
                   key={item.id}
@@ -54,7 +45,6 @@ export function DashboardRail({
                 >
                   <Icon size={16} aria-hidden="true" />
                   <span>{item.label}</span>
-                  {badgeValue !== undefined && <small>{badgeValue}</small>}
                 </button>
               )
             })}

@@ -181,7 +181,10 @@ json OpenRouterService::handleCommand(const json& command) {
         models.push_back({
           {"id", model.value("id", "")}, {"name", model.value("name", "")},
           {"contextLength", model.value("context_length", 0)},
-          {"pricing", model.contains("pricing") ? model["pricing"] : json::object()}
+          {"pricing", model.contains("pricing") ? model["pricing"] : json::object()},
+          // 도구 호출 가능 여부를 도구가 직접 판단할 수 있게 넘긴다(테이블 디자이너 AI가 tools를 쓴다).
+          {"supported_parameters", model.contains("supported_parameters") ? model["supported_parameters"] : json::array()},
+          {"architecture", model.contains("architecture") ? model["architecture"] : json::object()}
         });
       }
     }
@@ -201,6 +204,11 @@ json OpenRouterService::handleCommand(const json& command) {
       {"temperature", std::clamp(finiteNumber(command, "temperature", 0.2), 0.0, 1.0)},
       {"max_completion_tokens", std::clamp(command.value("maxTokens", 1600), 128, 4096)}
     };
+    // 도구 호출(function calling)을 쓰는 도구를 위해 tools를 그대로 전달한다.
+    if (command.contains("tools") && command["tools"].is_array() && !command["tools"].empty()) {
+      body["tools"] = command["tools"];
+      body["tool_choice"] = "auto";
+    }
     const json result = request(L"POST", L"/api/v1/chat/completions", body.dump(), key);
     double actualCost = estimatedCost;
     if (result.contains("usage") && result["usage"].is_object() && result["usage"].contains("cost") && result["usage"]["cost"].is_number()) {

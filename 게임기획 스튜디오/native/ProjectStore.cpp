@@ -174,15 +174,26 @@ json ProjectStore::availableTools() {
       {"workspace", {{"inputs", json::array({"game-data"})}, {"outputs", json::array()}}}
     }),
     json::object({
-      {"id", "deck-designer"},
-      {"name", "기획서 디자이너"},
-      {"shortName", "기획서"},
-      {"description", "논리와 근거를 PPTX·Word 기획서로 구성합니다."},
-      {"category", "문서"},
+      {"id", "review-analytics"},
+      {"name", "AI 리뷰데이터 분석"},
+      {"shortName", "AI 리뷰데이터 분석"},
+      {"description", "Steam 유저 리뷰를 수집·분석하고 기획 인사이트를 만듭니다."},
+      {"category", "데이터"},
       {"status", "ready"},
+      {"accent", "cyan"},
+      {"keywords", json::array({"리뷰", "Steam", "감성", "인사이트", "유저 피드백", "품질", "표본", "AI"})},
+      {"workspace", {{"inputs", json::array()}, {"outputs", json::array({"review-insights"})}}}
+    }),
+    json::object({
+      {"id", "deck-designer"},
+      {"name", "PPT 디자이너"},
+      {"shortName", "PPT 디자이너"},
+      {"description", "리뷰 근거와 기획 논리를 PPTX·Word 기획서로 구성합니다."},
+      {"category", "문서"},
+      {"status", "prototype"},
       {"accent", "violet"},
       {"keywords", json::array({"기획서", "PPT", "PPTX", "Word", "문서"})},
-      {"workspace", {{"inputs", json::array()}, {"outputs", json::array()}}}
+      {"workspace", {{"inputs", json::array({"review-insights"})}, {"outputs", json::array()}}}
     }),
     json::object({
       {"id", "prompt-library"},
@@ -190,7 +201,7 @@ json ProjectStore::availableTools() {
       {"shortName", "프롬프트"},
       {"description", "Prombot 방식으로 프롬프트를 조합하고 프리셋을 저장합니다."},
       {"category", "생산성"},
-      {"status", "ready"},
+      {"status", "prototype"},
       {"accent", "violet"},
       {"keywords", json::array({"프롬프트", "Prompt", "Prombot", "프리셋", "랜덤", "기록", "AI", "복사"})},
       {"workspace", {{"inputs", json::array()}, {"outputs", json::array()}}}
@@ -418,6 +429,39 @@ void ProjectStore::activateProject(const std::string& projectId) {
   }
   loadProjectFile(projectFile);
   registry_["lastProjectId"] = projectId;
+  saveRegistry();
+}
+
+void ProjectStore::trashProject(const std::string& projectId) {
+  auto& projects = registry_["projects"];
+  const auto iterator = std::find_if(projects.begin(), projects.end(), [&](const json& item) {
+    return item.value("id", "") == projectId;
+  });
+  if (iterator == projects.end()) throw std::runtime_error("삭제할 작업공간을 찾을 수 없습니다.");
+
+  const std::filesystem::path projectFile = utf8ToWide(iterator->value("path", ""));
+  if (projectFile.filename() != L"project.gds.json") throw std::runtime_error("작업공간 경로가 올바르지 않습니다.");
+  const std::filesystem::path projectRoot = projectFile.parent_path();
+  if (projectRoot.empty() || !std::filesystem::exists(projectRoot)) throw std::runtime_error("작업공간 폴더를 찾을 수 없습니다.");
+
+  const std::filesystem::path trashRoot = projectRoot.parent_path() / L".게임기획 스튜디오 휴지통";
+  std::filesystem::create_directories(trashRoot);
+  std::wstring trashName = safeDirectoryName(utf8ToWide(iterator->value("name", "프로젝트"))) + L"-" + utf8ToWide(projectId);
+  std::filesystem::path destination = trashRoot / trashName;
+  if (std::filesystem::exists(destination)) destination += L"-" + utf8ToWide(newId());
+  std::filesystem::rename(projectRoot, destination);
+
+  const bool wasActive = activeProject_.has_value() && activeProject_->value("id", "") == projectId;
+  projects.erase(iterator);
+  if (wasActive) {
+    activeProject_.reset();
+    activeProjectFile_.clear();
+  }
+  const std::string lastProjectId = registry_.value("lastProjectId", "");
+  if (lastProjectId == projectId) {
+    if (projects.empty()) registry_["lastProjectId"] = nullptr;
+    else registry_["lastProjectId"] = projects.front().value("id", "");
+  }
   saveRegistry();
 }
 
@@ -816,6 +860,8 @@ json ProjectStore::handleCommand(const json& command) {
     createProject(command);
   } else if (type == "project:activate") {
     activateProject(command.value("projectId", ""));
+  } else if (type == "project:trash") {
+    trashProject(command.value("projectId", ""));
   } else if (type == "tool:activate") {
     activateTool(command.value("toolId", ""));
   } else if (type == "workspace:graphSave") {
@@ -840,6 +886,10 @@ json ProjectStore::handleCommand(const json& command) {
     return writeTableProject(command);
   } else if (type == "tableProject:trash") {
     return trashTableProject(command);
+  } else if (type == "tableChat:load") {
+    return loadTableChat(command);
+  } else if (type == "tableChat:save") {
+    return saveTableChat(command);
   } else {
     throw std::runtime_error("지원하지 않는 명령입니다: " + type);
   }
@@ -945,6 +995,34 @@ json ProjectStore::trashTableProject(const json& command) {
     std::filesystem::rename(source, target);
   }
   return {{"type", "tableProject:trashed"}, {"requestId", command.value("requestId", "")}, {"projectId", projectId}};
+}
+
+// 테이블 디자이너 AI 대화는 표 파일(.gsw)과 분리해 프로젝트 폴더 안 숨김 폴더에 둔다.
+// .gsw를 다른 사람에게 넘겨도 대화가 따라가지 않게 하기 위해서다.
+std::filesystem::path ProjectStore::tableChatPath(const std::string& projectId) const {
+  const std::wstring safeId = safeFileName(utf8ToWide(projectId));
+  if (safeId.empty()) throw std::runtime_error("대화를 저장할 프로젝트 ID가 없습니다.");
+  return tableProjectDirectory_ / L".table-designer" / L"chats" / (safeId + L".json");
+}
+
+json ProjectStore::loadTableChat(const json& command) const {
+  const auto file = tableChatPath(command.value("projectId", ""));
+  json data = nullptr;
+  if (std::filesystem::exists(file)) {
+    try {
+      data = readJson(file);
+    } catch (...) {
+      data = nullptr;  // 깨진 파일은 무시하고 빈 대화로 시작한다. 파일은 수동 복구용으로 남긴다.
+    }
+  }
+  return {{"type", "tableChat:data"}, {"requestId", command.value("requestId", "")}, {"data", data}};
+}
+
+json ProjectStore::saveTableChat(const json& command) {
+  const auto file = tableChatPath(command.value("projectId", ""));
+  std::filesystem::create_directories(file.parent_path());
+  writeJsonAtomically(file, command.value("data", json::object()));
+  return {{"type", "tableChat:saved"}, {"requestId", command.value("requestId", "")}};
 }
 
 std::string ProjectStore::nowIso8601() {

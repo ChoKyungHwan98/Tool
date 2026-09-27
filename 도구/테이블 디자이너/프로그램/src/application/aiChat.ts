@@ -1,4 +1,4 @@
-import { assertOpenRouterPolicy, fetchOpenRouterCatalog, type OpenRouterSettings } from './openRouterProvider'
+import { assertOpenRouterPolicy, fetchOpenRouterCatalog, type OpenRouterCatalog, type OpenRouterSettings } from './openRouterProvider'
 import type { AiToolCall } from './aiTools'
 import type { EntityId, RowsByTable, SchemaProject, SchemaTable } from '../domain/schema'
 
@@ -27,6 +27,19 @@ export const MAX_CHAT_HISTORY = 20
 export const MAX_SAMPLE_ROWS = 20
 /** 테이블이 이보다 많으면 관련 테이블만 자세히 적고 나머지는 이름만 적는다. */
 const DETAIL_TABLE_LIMIT = 25
+
+// ── 토큰 과사용 방지 ────────────────────────────────────────────
+// 대화가 저장되어 길어져도 한 번의 요청 크기는 늘지 않게 여기서 강제한다.
+/** 이전 메시지 하나를 보낼 때 최대 글자 수. 긴 AI 답변은 앞부분만 보낸다. */
+export const MAX_HISTORY_MESSAGE_CHARS = 1500
+/** 지금 보내는 질문의 최대 글자 수. */
+export const MAX_CURRENT_MESSAGE_CHARS = 4000
+/** 시스템 문맥 + 대화 전체의 글자 상한. 한국어 기준 대략 입력 1만 2천 토큰. 넘으면 오래된 대화부터 뺀다. */
+export const MAX_PROMPT_CHARS = 24_000
+/** 한 번의 답변 길이 상한(토큰). 표 생성 규칙을 담기에 충분한 크기. */
+export const MAX_OUTPUT_TOKENS = 2000
+/** 모델 목록은 자주 바뀌지 않는다. 요청마다 다시 받지 않는다. */
+const CATALOG_CACHE_MS = 10 * 60 * 1000
 
 const TYPE_SHORTHAND: Readonly<Record<string, string>> = {
   string: 's',
@@ -62,7 +75,22 @@ function buildForeignKeyLabels(project: SchemaProject): ReadonlyMap<EntityId, st
   return labels
 }
 
-function describeTable(table: SchemaTable, foreignKeyLabels: ReadonlyMap<EntityId, string>): string {
+/** 단일 숫자 PK의 사용 중인 구간. 행 내용은 보내지 않고 최소·최대만 쓴다. */
+function idRangeOf(table: SchemaTable, rowsByTable?: RowsByTable): string {
+  if (!rowsByTable || table.primaryKey.columnIds.length !== 1) return ''
+  const pk = table.primaryKey.columnIds[0]!
+  let min = Infinity
+  let max = -Infinity
+  for (const row of rowsByTable[table.tableId] ?? []) {
+    const value = Number(row.cells[pk])
+    if (!Number.isFinite(value)) continue
+    if (value < min) min = value
+    if (value > max) max = value
+  }
+  return Number.isFinite(min) ? ` ID ${min}~${max}` : ''
+}
+
+function describeTable(table: SchemaTable, foreignKeyLabels: ReadonlyMap<EntityId, string>, rowsByTable?: RowsByTable): string {
   const primaryKeyNames = table.primaryKey.columnIds
     .map((columnId) => table.columns.find((column) => column.columnId === columnId)?.name)
     .filter((name): name is string => Boolean(name))
@@ -75,7 +103,8 @@ function describeTable(table: SchemaTable, foreignKeyLabels: ReadonlyMap<EntityI
     })
     .join(', ')
 
-  return `- ${table.name}[PK ${primaryKeyNames.join('+') || '없음'}] ${columns || '컬럼 없음'}`
+  const korean = table.displayName && table.displayName !== table.name ? `(${table.displayName})` : ''
+  return `- ${table.name}${korean}[PK ${primaryKeyNames.join('+') || '없음'}${idRangeOf(table, rowsByTable)}] ${columns || '컬럼 없음'}`
 }
 
 /** focus 테이블과 그것에 FK로 연결된 테이블만 추린다. */
@@ -119,6 +148,8 @@ export function buildChatSystemPrompt(
     readonly focusTableId?: EntityId
     /** 넘기면 focus 테이블의 앞 20행만 붙는다. 넘기지 않으면 행은 전혀 보내지 않는다. */
     readonly rowsByTable?: RowsByTable
+    /** 표마다 사용 중인 ID 최소·최대만 계산한다(행 내용은 보내지 않는다). 새 ID 구간이 겹치지 않게 하려고 쓴다. */
+    readonly idRangeRows?: RowsByTable
   } = {},
 ): string {
   const foreignKeyLabels = buildForeignKeyLabels(project)
@@ -133,7 +164,7 @@ export function buildChatSystemPrompt(
   } else if (project.tables.length <= DETAIL_TABLE_LIMIT || !focusTable) {
     schemaLines = [
       `테이블 ${project.tables.length}개 (타입: s=문자, i=정수, f=실수, b=참거짓, e=열거, →는 외래키):`,
-      ...project.tables.slice(0, DETAIL_TABLE_LIMIT).map((table) => describeTable(table, foreignKeyLabels)),
+      ...project.tables.slice(0, DETAIL_TABLE_LIMIT).map((table) => describeTable(table, foreignKeyLabels, options.idRangeRows)),
       ...(project.tables.length > DETAIL_TABLE_LIMIT
         ? [`그 외 ${project.tables.length - DETAIL_TABLE_LIMIT}개: ${project.tables.slice(DETAIL_TABLE_LIMIT).map((table) => table.name).join(', ')}`,
           '자세한 내용이 필요한 테이블이 있으면 이름을 말하고 물어보세요.']
@@ -148,7 +179,7 @@ export function buildChatSystemPrompt(
     schemaLines = [
       `테이블 ${project.tables.length}개. 지금 보고 있는 '${focusTable.name}'과 연결된 것만 자세히 적습니다.`,
       '(타입: s=문자, i=정수, f=실수, b=참거짓, e=열거, →는 외래키)',
-      ...detailed.map((table) => describeTable(table, foreignKeyLabels)),
+      ...detailed.map((table) => describeTable(table, foreignKeyLabels, options.idRangeRows)),
       '',
       `나머지 ${others.length}개 테이블 이름: ${others.map((table) => table.name).join(', ')}`,
       '이 중 자세한 내용이 필요하면 이름을 말하고 물어보세요.',
@@ -160,7 +191,16 @@ export function buildChatSystemPrompt(
     : []
 
   return [
-    '당신은 게임 기획자와 함께 게임 데이터 테이블을 설계하는 작업 파트너입니다.',
+    '당신은 게임 기획자와 함께 게임 데이터 테이블 구조를 처음부터 설계하는 작업 파트너입니다.',
+    '',
+    '테이블 설계 원칙 (게임 회사 실무 기준):',
+    '- 먼저 시스템을 이해하고, 필요한 정보를 분류해 컬럼으로 만든다. 게임 시스템 하나가 테이블 하나 이상이 된다 (캐릭터 시스템 → 캐릭터 테이블).',
+    '- 첫 컬럼은 항상 ID(PK, 정수)다. 새 테이블의 ID는 다른 테이블과 겹치지 않는 구간으로 시작하고 업데이트 여유를 둔다 (예: 캐릭터 10001~, 아이템 20001~). 아래 "ID a~b"는 이미 쓰는 구간이다.',
+    '- 컬럼마다 영문 이름(snake_case)·한글 이름·자료형·한 줄 설명을 붙이고, 수치는 최소/최대값을 정한다. 중요한 컬럼을 왼쪽에 둔다.',
+    '- 한 셀에는 값 하나만 둔다(1정규형). 여러 개면 별도 테이블로 나눈다. 단, RGB처럼 개수와 의미가 고정된 묶음은 예외로 허용한다.',
+    '- 같은 정보를 두 곳에 적지 않는다(2·3정규형). 다른 테이블 정보는 외래키로 참조한다. 이름은 참조대상_id (예: character_id) 로 짓고 add_relation으로 연결한다.',
+    '- 이미지·사운드·애니메이션은 파일 경로 문자열로 적는다 (resource_ref).',
+    '- 여러 테이블을 만들 때는 먼저 표 목록과 관계를 짧게 요약한 뒤 도구를 호출하고, 각 표에 예시 행을 최소 1개 넣는다.',
     '',
     '대화 규칙:',
     '- 한국어로, 간결하고 구체적으로 답합니다.',
@@ -182,9 +222,32 @@ export function buildChatRequestMessages(
   thread: readonly AiChatMessage[],
   maxHistory: number = MAX_CHAT_HISTORY,
 ): readonly AiChatMessage[] {
-  const history = thread.filter((message) => message.role !== 'system').slice(-maxHistory)
+  const clip = (text: string, limit: number) => text.length > limit ? `${text.slice(0, limit)}…(생략)` : text
+  const recent = thread.filter((message) => message.role !== 'system').slice(-maxHistory)
+  const history = recent.map((message, index) => ({
+    ...message,
+    content: clip(message.content, index === recent.length - 1 ? MAX_CURRENT_MESSAGE_CHARS : MAX_HISTORY_MESSAGE_CHARS),
+  }))
+
+  // 전체 상한을 넘으면 가장 오래된 대화부터 뺀다. 지금 질문(마지막)은 항상 남긴다.
+  let total = systemPrompt.length + history.reduce((sum, message) => sum + message.content.length, 0)
+  while (history.length > 1 && total > MAX_PROMPT_CHARS) {
+    total -= history.shift()!.content.length
+  }
 
   return [{ role: 'system', content: systemPrompt }, ...history]
+}
+
+let catalogCache: { readonly key: string; readonly fetchImpl: typeof fetch; readonly at: number; readonly catalog: OpenRouterCatalog } | null = null
+
+async function cachedCatalog(apiKey: string | undefined, fetchImpl: typeof fetch): Promise<OpenRouterCatalog> {
+  const key = apiKey?.trim() ?? ''
+  if (catalogCache && catalogCache.key === key && catalogCache.fetchImpl === fetchImpl && Date.now() - catalogCache.at < CATALOG_CACHE_MS) {
+    return catalogCache.catalog
+  }
+  const catalog = await fetchOpenRouterCatalog({ apiKey, fetchImpl })
+  catalogCache = { key, fetchImpl, at: Date.now(), catalog }
+  return catalog
 }
 
 export async function requestChatCompletion(input: {
@@ -195,7 +258,7 @@ export async function requestChatCompletion(input: {
   readonly fetchImpl?: typeof fetch
 }): Promise<AiChatTurn> {
   const fetchImpl = input.fetchImpl ?? fetch
-  const catalog = await fetchOpenRouterCatalog({ apiKey: input.settings.apiKey, fetchImpl })
+  const catalog = await cachedCatalog(input.settings.apiKey, fetchImpl)
   const selectedModel = input.settings.modelId
     ? catalog.models.find((candidate) => candidate.id === input.settings.modelId)
     : undefined
@@ -222,6 +285,7 @@ export async function requestChatCompletion(input: {
       model: model.id,
       messages: input.messages,
       temperature: 0.6,
+      max_tokens: MAX_OUTPUT_TOKENS,
       ...(input.tools && input.tools.length > 0 ? { tools: input.tools, tool_choice: 'auto' } : {}),
     }),
     signal: input.signal,

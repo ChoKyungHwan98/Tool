@@ -24,7 +24,7 @@ describe('통합 Excel 내보내기', () => {
     expect(documentationSheet.getCell('A1').value).toBe(gameCSampleProject.name)
     expect(documentationSheet.getCell('A2').value).toBe('테이블 설명 및 규격')
     expect(documentationSheet.getCell('A4').value).toBe('테이블 설명')
-    expect(documentationSheet.getRow(5).values).toEqual([undefined, '테이블명', '설명', '설명', '설명'])
+    expect(documentationSheet.getRow(5).values).toEqual([undefined, '테이블명', '설명', '설명', '설명', '설명', '설명', '설명'])
 
     const specificationSectionRow = 7 + gameCSampleProject.tables.length
     const specificationHeaderRow = specificationSectionRow + 1
@@ -34,17 +34,26 @@ describe('통합 Excel 내보내기', () => {
       undefined,
       '테이블명',
       '칼럼명',
+      '한글명',
       '자료형',
+      '키',
+      '참조',
       '설명',
     ])
     expect(documentationSheet.getRow(firstSpecificationRow).values).toEqual([
       undefined,
       'ItemType',
       'ItemTypeId',
+      '',
       'string',
+      'PK',
+      '',
       '',
     ])
-    expect(documentationSheet.columns.map((column) => column.width)).toEqual([24, 28, 16, 68])
+    // FK 칼럼은 참조 칸에 '테이블.칼럼'이 적힌다.
+    const itemTypeIdReference = documentationSheet.getColumn(6).values.find((value) => value === 'ItemType.ItemTypeId')
+    expect(itemTypeIdReference).toBe('ItemType.ItemTypeId')
+    expect(documentationSheet.columns.map((column) => column.width)).toEqual([22, 24, 16, 12, 8, 28, 48])
     expect(documentationSheet.views[0]).toMatchObject({ state: 'frozen', ySplit: 2, showGridLines: false })
     expect(documentationSheet.pageSetup).toMatchObject({
       orientation: 'landscape',

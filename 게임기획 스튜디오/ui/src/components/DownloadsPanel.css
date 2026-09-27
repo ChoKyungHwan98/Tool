@@ -1,0 +1,142 @@
+/* 다운로드 기록: 왼쪽 아이콘 줄 옆에 뜨는 목록. 공용 지침의 흰 표면·16px 모서리·글자 단계를 쓴다. */
+.downloads-panel {
+  position: fixed;
+  z-index: 120;
+  left: 64px;
+  bottom: 56px;
+  width: min(400px, calc(100vw - 88px));
+  max-height: min(560px, calc(100vh - 120px));
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #e5e8eb;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 18px 48px rgba(25, 31, 40, .18);
+  color: #191f28;
+  overflow: hidden;
+}
+
+.downloads-panel > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 16px 12px 20px;
+  border-bottom: 1px solid #e5e8eb;
+}
+
+.downloads-panel > header strong {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.downloads-clear {
+  height: 30px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #5f6977;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.downloads-clear:hover { background: #f2f4f6; color: #191f28; }
+
+.downloads-empty {
+  margin: 0;
+  padding: 24px 20px;
+  color: #5f6977;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.downloads-panel ul {
+  margin: 0;
+  padding: 8px;
+  list-style: none;
+  overflow: auto;
+}
+
+.downloads-panel li {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 8px 10px 12px;
+  border-radius: 12px;
+}
+
+.downloads-panel li:hover { background: #f7f8fa; }
+.downloads-panel li > svg { width: 18px; height: 18px; color: #1b64da; }
+.downloads-panel li.is-unavailable > svg { color: #8b95a1; }
+
+.downloads-copy {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.downloads-copy strong {
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.downloads-copy small {
+  color: #5f6977;
+  font-size: 12px;
+}
+
+.downloads-copy em {
+  color: #c2413b;
+  font-style: normal;
+}
+
+.downloads-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.downloads-actions button {
+  height: 30px;
+  padding: 0 10px;
+  border: 1px solid #e5e8eb;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #333d4b;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.downloads-actions button:hover:not(:disabled) { border-color: #1b64da; color: #1b64da; }
+.downloads-actions button:disabled { opacity: .4; cursor: default; }
+
+.downloads-actions .downloads-remove {
+  width: 30px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border-color: transparent;
+  color: #8b95a1;
+}
+
+.downloads-actions .downloads-remove svg { width: 14px; height: 14px; }
+
+/* 새로 받은 파일이 있으면 아이콘 오른쪽 위에 점 */
+.activity-rail-item--badge::after {
+  content: '';
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  width: 8px;
+  height: 8px;
+  border: 2px solid #f2f2f4;
+  border-radius: 50%;
+  background: #1b64da;
+}

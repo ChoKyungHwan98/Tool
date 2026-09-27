@@ -26,6 +26,86 @@
   background: #f7f9fb;
 }
 
+/* 지난 대화: 설정과 같은 자리에 열리는 목록. 최근 대화가 위. */
+.ai-history {
+  display: grid;
+  flex: 0 1 auto;
+  gap: 8px;
+  max-height: 55%;
+  min-height: 0;
+  padding: 11px 13px 13px;
+  border-bottom: 1px solid var(--app-border);
+  background: #f7f9fb;
+}
+
+.ai-history ul {
+  display: grid;
+  gap: 4px;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  overflow: auto;
+  list-style: none;
+}
+
+.ai-history li {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: 8px;
+}
+
+.ai-history li:hover { background: #eef2f6; }
+.ai-history li.active { background: #e8f1fe; }
+
+.ai-history-open {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+  gap: 2px;
+  padding: 8px 10px;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.ai-history-open strong {
+  overflow: hidden;
+  color: #203047;
+  font-size: 13px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ai-history-open small {
+  color: #5f6977;
+  font-size: 12px;
+}
+
+.ai-history-delete {
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 auto;
+  margin-right: 4px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #8b95a1;
+  cursor: pointer;
+}
+
+.ai-history-delete:hover { background: #fdecec; color: #c2413b; }
+
+.ai-history-empty {
+  margin: 0;
+  color: #5f6977;
+  font-size: 13px;
+}
+
 @media (max-height: 720px) {
   .ai-settings {
     max-height: 68vh;
@@ -55,7 +135,7 @@
 .ai-settings-heading span,
 .ai-settings label > span {
   color: #718196;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
 }
 
@@ -73,7 +153,7 @@
   background: #ffffff;
   color: #41546b;
   font: inherit;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   cursor: pointer;
 }
@@ -97,7 +177,7 @@
   background: #ffffff;
   color: #26384f;
   font: inherit;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .ai-settings input:focus,
@@ -122,7 +202,7 @@
 
 .ai-settings small {
   color: #65758a;
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.4;
 }
 
@@ -147,8 +227,8 @@
   background: #f1f4f7;
   color: #637489;
   font: inherit;
-  font-size: 11px;
-  font-weight: 750;
+  font-size: 12px;
+  font-weight: 700;
   cursor: pointer;
 }
 
@@ -190,7 +270,7 @@
 
 .ai-finding small {
   color: inherit;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
   line-height: 1.35;
 }
@@ -199,7 +279,7 @@
   padding-left: 8px;
   border-left: 2px solid #7ab4ac;
   color: #3e5c57;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .proposal-actions {
@@ -216,8 +296,8 @@
   background: #ffffff;
   color: var(--app-primary);
   font: inherit;
-  font-size: 11px;
-  font-weight: 750;
+  font-size: 12px;
+  font-weight: 700;
   cursor: pointer;
 }
 
@@ -232,7 +312,7 @@
   gap: 6px;
   padding: 7px 8px;
   color: #39705e;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .send-button.cancel {
@@ -265,11 +345,11 @@
 }
 
 .export-validation strong {
-  font-size: 11.5px;
+  font-size: 12px;
 }
 
 .export-validation span {
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .export-validation.ready {

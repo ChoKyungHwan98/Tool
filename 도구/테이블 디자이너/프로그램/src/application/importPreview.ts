@@ -42,6 +42,8 @@ export interface TableImportCandidate {
   readonly headerRow: number
   readonly columns: readonly ImportColumnCandidate[]
   readonly primaryKeyColumnIds: readonly EntityId[]
+  /** 이름·값으로 추정한 PK. '첫 열을 PK로'를 끄면 이 값으로 돌아간다. */
+  readonly inferredPrimaryKeyColumnIds: readonly EntityId[]
   readonly rows: readonly DataRow[]
 }
 
@@ -73,11 +75,12 @@ export interface ImportSelection {
 export function createImportPreview(
   sheets: readonly RawImportSheet[],
   existingProject?: SchemaProject,
+  options: { readonly firstColumnPrimaryKey?: boolean } = {},
 ): ImportPreview {
   const usedNames = new Set(existingProject?.tables.map((table) => table.name.toLowerCase()) ?? [])
   const warnings: string[] = []
   const tables = sheets.flatMap((sheet) => {
-    const prepared = prepareSheet(sheet, usedNames)
+    const prepared = prepareSheet(sheet, usedNames, options.firstColumnPrimaryKey === true)
 
     if (!prepared) {
       warnings.push(`${sheet.sourceName} · ${sheet.sheetName}: 헤더와 데이터가 없어 건너뜁니다.`)
@@ -85,6 +88,10 @@ export function createImportPreview(
     }
 
     usedNames.add(prepared.name.toLowerCase())
+    const firstColumn = prepared.columns[0]
+    if (options.firstColumnPrimaryKey && firstColumn && !firstColumn.primaryKeyCandidate) {
+      warnings.push(`${prepared.name}: 첫 열 '${firstColumn.name}'에 빈 값이나 중복이 있습니다. PK로 쓰기 전에 확인하세요.`)
+    }
     return [prepared]
   })
 
@@ -178,7 +185,7 @@ export function applyImportPreview(
   })
 }
 
-function prepareSheet(sheet: RawImportSheet, usedNames: Set<string>): TableImportCandidate | null {
+function prepareSheet(sheet: RawImportSheet, usedNames: Set<string>, firstColumnPrimaryKey: boolean): TableImportCandidate | null {
   const rows = trimSheet(sheet.rows)
 
   if (rows.length === 0) {
@@ -208,7 +215,9 @@ function prepareSheet(sheet: RawImportSheet, usedNames: Set<string>): TableImpor
       primaryKeyCandidate: isUniqueNonBlank(values),
     } satisfies ImportColumnCandidate
   })
-  const primaryKeyColumnIds = choosePrimaryKey(name, columns)
+  // 실무 규칙: 테이블의 첫 컬럼은 Index(ID). 설정이 켜져 있으면 첫 열을 PK로 둔다.
+  const inferredPrimaryKeyColumnIds = choosePrimaryKey(name, columns)
+  const primaryKeyColumnIds = firstColumnPrimaryKey && columns[0] ? [columns[0].columnId] : inferredPrimaryKeyColumnIds
   const importedRows = body.map((sourceRow) => ({
     rowId: makeId('row'),
     cells: Object.fromEntries(columns.map((column) => [column.columnId, normalizeCell(sourceRow[column.sourceIndex])])),
@@ -223,6 +232,7 @@ function prepareSheet(sheet: RawImportSheet, usedNames: Set<string>): TableImpor
     headerRow: headerRow + 1,
     columns,
     primaryKeyColumnIds,
+    inferredPrimaryKeyColumnIds,
     rows: importedRows,
   }
 }

@@ -3,7 +3,6 @@ import { createEmptySnapshot } from './demoState';
 import {
   availableToolCategories,
   filterToolCatalog,
-  groupToolsByCategory,
   splitToolsByConnection,
   toolCategory,
 } from './toolCatalog';
@@ -15,6 +14,7 @@ describe('tool catalog', () => {
     expect(tools.map(toolCategory)).toEqual([
       '데이터·밸런스',
       '로직·전투',
+      '데이터·밸런스',
       '문서·발표',
       'AI·자동화',
     ]);
@@ -28,8 +28,10 @@ describe('tool catalog', () => {
 
   it('separates workspace-connectable and standalone tools', () => {
     const split = splitToolsByConnection(tools);
-    expect(split.workspace.map((tool) => tool.id)).toEqual(['table-designer', 'pattern-designer']);
-    expect(split.standalone.map((tool) => tool.id)).toEqual(['deck-designer', 'prompt-library']);
+    expect(split.workspace.map((tool) => tool.id)).toEqual([
+      'table-designer', 'pattern-designer', 'review-analytics', 'deck-designer',
+    ]);
+    expect(split.standalone.map((tool) => tool.id)).toEqual(['prompt-library']);
   });
 
   it('searches names, descriptions, keywords and product categories together', () => {
@@ -42,10 +44,9 @@ describe('tool catalog', () => {
   it('combines connection and category filters without duplicating tools', () => {
     const filtered = filterToolCatalog(tools, {
       query: '',
-      connection: 'standalone',
+      connection: 'workspace',
       category: '문서·발표',
     });
     expect(filtered.map((tool) => tool.id)).toEqual(['deck-designer']);
-    expect(groupToolsByCategory(filtered)).toHaveLength(1);
   });
 });

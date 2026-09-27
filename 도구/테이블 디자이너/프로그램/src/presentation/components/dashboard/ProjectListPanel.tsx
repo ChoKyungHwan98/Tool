@@ -7,7 +7,6 @@ import {
   FolderOpen,
   Pencil,
   RotateCcw,
-  Search,
   Star,
   Trash2,
   type LucideIcon,
@@ -161,21 +160,20 @@ export function ProjectListPanel({
       <div className="dashboard-section-heading">
         <div>
           <h1 id={headingId}>{heading}</h1>
-          <span>{showControls && query ? `${filteredProjects.length}개 검색됨 · 전체 ${projects.length}개` : `${projects.length}개`}</span>
+          {showControls && query && <span>{`${filteredProjects.length}개 검색됨`}</span>}
         </div>
         {showControls && (
           <div className="dashboard-list-controls">
-            <label className="dashboard-search">
-              <Search size={15} aria-hidden="true" />
-              <input
-                ref={searchRef}
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                onKeyDown={(event) => { if (event.key === 'Escape') setQuery('') }}
-                placeholder="프로젝트 검색"
-              />
-              <kbd aria-hidden="true">/</kbd>
-            </label>
+            <input
+              ref={searchRef}
+              className="dashboard-search"
+              type="search"
+              aria-label="프로젝트 검색"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              onKeyDown={(event) => { if (event.key === 'Escape') setQuery('') }}
+              placeholder="프로젝트 검색"
+            />
             <div className="dashboard-sort" role="group" aria-label="정렬 기준">
               {([['recent', '최근순'], ['name', '이름순'], ['size', '규모순']] as const).map(([key, label]) => (
                 <button

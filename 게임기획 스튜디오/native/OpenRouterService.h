@@ -9,11 +9,13 @@ class OpenRouterService {
 public:
   explicit OpenRouterService(std::filesystem::path appDataDirectory);
   nlohmann::json handleCommand(const nlohmann::json& command);
+  // Used only to seed the local review-analysis child process at launch.
+  // Callers must never serialize or return this value to the web UI.
+  static std::string readApiKey();
 
 private:
   std::filesystem::path usagePath_;
 
-  static std::string readApiKey();
   static void saveApiKey(const std::string& key);
   static void deleteApiKey();
   static nlohmann::json request(

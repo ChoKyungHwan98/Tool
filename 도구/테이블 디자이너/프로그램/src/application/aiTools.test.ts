@@ -138,3 +138,26 @@ describe('describeAiBatch', () => {
     expect(describeAiBatch(plan)).toBe('테이블 1개 생성 · 컬럼 1개 추가')
   })
 })
+
+describe('설계 원칙 반영', () => {
+  it('PK 컬럼을 첫 열로 옮기고 한글 이름·설명·최소/최대값을 남긴다', () => {
+    const project = createEmptyProject('내 게임')
+    const next = applyPlan(project, [
+      call('create_table', {
+        name: 'monster',
+        displayName: '몬스터',
+        columns: [
+          { name: 'hp', displayName: '체력', dataType: 'int32', min: 1, max: 99999 },
+          { name: 'id', displayName: '몬스터 ID', dataType: 'int32', primaryKey: true },
+        ],
+      }),
+    ])
+    const table = next.tables.find((item) => item.name === 'monster')!
+    expect(table.displayName).toBe('몬스터')
+    expect(table.columns[0]?.name).toBe('id')
+    expect(table.primaryKey.columnIds).toEqual([table.columns[0]?.columnId])
+    const hp = table.columns.find((column) => column.name === 'hp')!
+    expect(hp.displayName).toBe('체력')
+    expect(hp.validationRules.map((rule) => [rule.kind, rule.value])).toEqual([['min', 1], ['max', 99999]])
+  })
+})

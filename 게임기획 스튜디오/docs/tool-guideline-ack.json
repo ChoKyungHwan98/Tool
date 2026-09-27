@@ -1,0 +1,11 @@
+{
+  "guidelineVersion": 1,
+  "guideline": "TOOL_UI_INTEGRATION_GUIDELINES.md",
+  "acknowledgedTools": [
+    "table-designer",
+    "pattern-designer",
+    "review-analytics",
+    "deck-designer",
+    "prompt-library"
+  ]
+}

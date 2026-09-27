@@ -17,6 +17,7 @@ declare global {
 
 const listeners = new Set<Listener>();
 const demoArtifacts = new Map<string, { revision: number; data: unknown; savedAt: string }>();
+const demoTableChats = new Map<string, unknown>();
 let demoTableProjects: Extract<HostMessage, { type: 'tableProject:records' }>['records'] = [];
 let demoCatalog: Extract<HostMessage, { type: 'artifact:catalog' }>['records'] = [];
 let demoPromptLibrary: Extract<HostMessage, { type: 'prompt:state' }>['library'] = {
@@ -95,6 +96,20 @@ export const studioBridge = {
       };
       demoTableProjects = [record, ...demoTableProjects.filter((item) => item.id !== command.projectId)];
       emit({ type: 'tableProject:written', requestId: command.requestId, record });
+      return;
+    }
+    if (command.type === 'downloads:list' || command.type === 'downloads:clear' || command.type === 'downloads:open' || command.type === 'downloads:reveal' || command.type === 'downloads:remove') {
+      // 브라우저 데모에는 실제 다운로드 기록이 없다.
+      emit({ type: 'downloads:list', requestId: command.requestId, items: [] });
+      return;
+    }
+    if (command.type === 'tableChat:load') {
+      emit({ type: 'tableChat:data', requestId: command.requestId, data: demoTableChats.get(command.projectId) ?? null });
+      return;
+    }
+    if (command.type === 'tableChat:save') {
+      demoTableChats.set(command.projectId, command.data);
+      emit({ type: 'tableChat:saved', requestId: command.requestId });
       return;
     }
     if (command.type === 'tableProject:trash') {

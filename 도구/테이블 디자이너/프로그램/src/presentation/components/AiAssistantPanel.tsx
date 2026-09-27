@@ -4,11 +4,13 @@ import {
   CheckCircle2,
   ChevronsRight,
   KeyRound,
+  MessagesSquare,
   RefreshCw,
   Send,
   Settings2,
   Sparkles,
   Square,
+  SquarePen,
   Trash2,
   X,
 } from 'lucide-react'
@@ -47,6 +49,8 @@ import {
   type OpenRouterCredentialStatus,
 } from '../../infrastructure/openRouterCredentials'
 import { useWorkbenchStore } from '../state/workbenchStore'
+import { isStudioHosted } from '../../infrastructure/studioSharedProjectRepository'
+import { defaultOpenRouterFetch, studioDeleteKey, studioKeyConfigured, studioSaveKey } from '../../infrastructure/studioOpenRouter'
 
 /** 왼쪽 = 무료 모델만, 오른쪽 = 유료 허용. 유료는 월 상한이 강제된다. */
 type AiTier = 'free' | 'paid'
@@ -68,20 +72,31 @@ export function AiAssistantPanel() {
   const aiError = useWorkbenchStore((state) => state.aiError)
   const aiMessages = useWorkbenchStore((state) => state.aiMessages)
   const appendAiMessage = useWorkbenchStore((state) => state.appendAiMessage)
-  const clearAiThread = useWorkbenchStore((state) => state.clearAiThread)
+  const aiConversations = useWorkbenchStore((state) => state.aiConversations)
+  const activeConversationId = useWorkbenchStore((state) => state.activeConversationId)
+  const startNewConversation = useWorkbenchStore((state) => state.startNewConversation)
+  const openConversation = useWorkbenchStore((state) => state.openConversation)
+  const deleteConversation = useWorkbenchStore((state) => state.deleteConversation)
+  const addAiTokenUsage = useWorkbenchStore((state) => state.addAiTokenUsage)
+  const [historyOpen, setHistoryOpen] = useState(false)
   const aiPendingBatch = useWorkbenchStore((state) => state.aiPendingBatch)
   const stageAiToolBatch = useWorkbenchStore((state) => state.stageAiToolBatch)
   const applyAiPendingBatch = useWorkbenchStore((state) => state.applyAiPendingBatch)
   const discardAiPendingBatch = useWorkbenchStore((state) => state.discardAiPendingBatch)
   const [prompt, setPrompt] = useState('')
-  const [tier, setTier] = useState<AiTier>('free')
+  const [tier, setTier] = useState<AiTier>(() => readModelChoice().tier)
   const [spentUsd, setSpentUsd] = useState(() => readSpend().usd)
   const [shareSampleRows, setShareSampleRows] = useState(false)
   const selectedTableId = useWorkbenchStore((state) => state.selectedTableId)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [apiKey, setApiKey] = useState('')
   const [freeModels, setFreeModels] = useState<readonly OpenRouterModel[]>([])
-  const [selectedModelId, setSelectedModelId] = useState('')
+  const [selectedModelId, setSelectedModelId] = useState(() => readModelChoice().modelId)
+  // 스튜디오 안에서는 키를 스튜디오가 보관한다. 도구는 "저장돼 있다"는 사실만 안다.
+  const studioHosted = isStudioHosted()
+  const openRouterFetch = useRef(defaultOpenRouterFetch()).current
+  const [studioKeyReady, setStudioKeyReady] = useState(false)
+  const hasKey = studioHosted ? studioKeyReady : apiKey.trim().length > 0
   const [openRouterStatus, setOpenRouterStatus] = useState<OpenRouterStatus>('idle')
   const [openRouterError, setOpenRouterError] = useState<string | null>(null)
   const [credentialStatus, setCredentialStatus] = useState<OpenRouterCredentialStatus | null>(null)
@@ -89,17 +104,32 @@ export function AiAssistantPanel() {
   const requestManager = useRef(new OpenRouterRequestManager(1))
 
   useEffect(() => {
-    // 보관해 둔 키가 있으면 새로고침 후에도 자동으로 되살린다.
+    // 보관해 둔 키가 있으면 다시 켰을 때도 자동으로 되살리고, 모델 목록까지 불러온다.
     void (async () => {
+      if (studioHosted) {
+        const configured = await studioKeyConfigured().catch(() => false)
+        setStudioKeyReady(configured)
+        setCredentialStatus({ available: true, stored: configured, message: configured ? '스튜디오에 저장된 키를 사용합니다. 모든 도구가 같은 키를 씁니다.' : '키를 보관하면 스튜디오에 저장되어 다시 켜도 남습니다.' })
+        if (configured) void loadModels()
+        return
+      }
       const status = await getOpenRouterCredentialStatus()
       setCredentialStatus(status)
 
       if (!status.stored) return
 
       const loaded = await loadOpenRouterApiKey()
-      if (loaded.apiKey) setApiKey(loaded.apiKey)
+      if (loaded.apiKey) {
+        setApiKey(loaded.apiKey)
+        void loadModels(tier, loaded.apiKey)
+      }
     })()
+    // 처음 한 번만 실행한다.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // 고른 요금제와 모델을 기억해 다시 켰을 때 다시 고르지 않게 한다.
+  useEffect(() => { writeModelChoice({ tier, modelId: selectedModelId }) }, [tier, selectedModelId])
 
   const beginResize = (event: ReactPointerEvent<HTMLDivElement>) => {
     event.currentTarget.setPointerCapture(event.pointerId)
@@ -114,11 +144,11 @@ export function AiAssistantPanel() {
     window.addEventListener('pointerup', stop)
   }
 
-  const loadModels = async (nextTier: AiTier = tier) => {
+  const loadModels = async (nextTier: AiTier = tier, keyOverride?: string) => {
     setOpenRouterStatus('checking')
     setOpenRouterError(null)
     try {
-      const catalog = await fetchOpenRouterCatalog({ apiKey: apiKey.trim() || undefined })
+      const catalog = await fetchOpenRouterCatalog({ apiKey: (keyOverride ?? apiKey).trim() || undefined, fetchImpl: openRouterFetch })
       // 도구 호출을 못 하는 모델을 고르면 테이블 생성이 조용히 실패하므로 아예 목록에서 뺀다.
       const candidates = (nextTier === 'free' ? catalog.freeModels : catalog.models).filter(supportsToolCalls)
       const models = [...candidates].sort((left, right) => {
@@ -143,6 +173,8 @@ export function AiAssistantPanel() {
     setFreeModels([])
     setRequestNote(null)
     setOpenRouterError(null)
+    // 키가 있으면 바뀐 요금제의 모델 목록을 바로 불러온다.
+    if (hasKey) void loadModels(nextTier)
   }
 
   const selectedModel = freeModels.find((model) => model.id === selectedModelId)
@@ -160,7 +192,7 @@ export function AiAssistantPanel() {
    * showUserMessage=false 면 지시문을 화면 말풍선으로 남기지 않는다(승인 후 자동 이어하기에 쓴다).
    */
   const runModelTurn = async (userContent: string, options: { readonly showUserMessage: boolean }) => {
-    if (!apiKey.trim() || !selectedModelId) {
+    if (!hasKey || !selectedModelId) {
       setSettingsOpen(true)
       setOpenRouterError('API 키를 입력하고 모델 목록을 불러와 모델을 선택하세요.')
       if (options.showUserMessage) appendAiMessage('user', userContent)
@@ -182,6 +214,8 @@ export function AiAssistantPanel() {
       focusTableId: useWorkbenchStore.getState().selectedTableId,
       // 켰을 때만 보내고, 그때도 앞 20행까지만 나간다(상한은 buildChatSystemPrompt가 강제).
       rowsByTable: shareSampleRows ? useWorkbenchStore.getState().document.rowsByTable : undefined,
+      // ID 최소·최대만 계산해 보낸다. 새 표의 ID 구간이 기존 표와 겹치지 않게 하려는 것.
+      idRangeRows: useWorkbenchStore.getState().document.rowsByTable,
     })
     const requestMessages = buildChatRequestMessages(systemPrompt, thread)
 
@@ -229,7 +263,14 @@ export function AiAssistantPanel() {
           requireStructuredOutput: false,
         },
         tools: AI_SCHEMA_TOOLS,
+        fetchImpl: openRouterFetch,
       })
+
+      // 무료·유료 모두 실제 사용 토큰을 대화에 누적하고 보여준다.
+      if (turn.usage) {
+        addAiTokenUsage(turn.usage.promptTokens, turn.usage.completionTokens)
+        setRequestNote(`이번 요청 입력 ${turn.usage.promptTokens.toLocaleString()} · 출력 ${turn.usage.completionTokens.toLocaleString()} 토큰`)
+      }
 
       // 실제 사용량이 오면 그걸로 기록하고, 없을 때만 추정치로 대신한다.
       if (selectedModel && !isFreeOpenRouterModel(selectedModel)) {
@@ -284,7 +325,7 @@ export function AiAssistantPanel() {
     const applied = aiPendingBatch
     applyAiPendingBatch()
 
-    if (!applied || !apiKey.trim() || !selectedModelId) return
+    if (!applied || !hasKey || !selectedModelId) return
 
     // 무엇이 이미 끝났는지 구체적으로 알려주지 않으면 모델이 같은 도구를 또 부른다.
     const createdTables = applied.rowPlans.length === 0 && applied.steps.length > 0
@@ -305,7 +346,7 @@ export function AiAssistantPanel() {
     const nextPrompt = (overridePrompt ?? prompt).trim()
     if (!nextPrompt) return
 
-    if (!apiKey.trim() || !selectedModelId) {
+    if (!hasKey || !selectedModelId) {
       setSettingsOpen(true)
       setOpenRouterError('API 키를 입력하고 모델 목록을 불러와 모델을 선택하세요.')
       return
@@ -321,7 +362,7 @@ export function AiAssistantPanel() {
         project,
         prompt: nextPrompt,
         settings: { ...defaultOpenRouterSettings, apiKey: apiKey.trim(), modelId: selectedModelId },
-      })
+      }, openRouterFetch)
       useWorkbenchStore.setState({ aiProposal: result.proposal, aiStatus: 'ready', aiError: null })
       setOpenRouterStatus('ready')
       setRequestNote(result.cached ? '동일한 스키마 요청의 세션 캐시 결과입니다.' : '행 데이터를 제외한 스키마 검토를 완료했습니다.')
@@ -333,13 +374,37 @@ export function AiAssistantPanel() {
     }
   }
 
-  const saveKey = async () => setCredentialStatus(await saveOpenRouterApiKey(apiKey))
+  const saveKey = async () => {
+    if (studioHosted) {
+      const configured = await studioSaveKey(apiKey.trim())
+      setStudioKeyReady(configured)
+      setApiKey('')
+      setCredentialStatus({ available: true, stored: configured, message: '스튜디오에 저장했습니다. 다시 켜도 남고, 모든 도구가 같은 키를 씁니다.' })
+      if (configured) void loadModels()
+      return
+    }
+    setCredentialStatus(await saveOpenRouterApiKey(apiKey))
+  }
   const loadKey = async () => {
+    if (studioHosted) {
+      const configured = await studioKeyConfigured()
+      setStudioKeyReady(configured)
+      setCredentialStatus({ available: true, stored: configured, message: configured ? '스튜디오에 저장된 키를 사용합니다.' : '스튜디오에 저장된 키가 없습니다.' })
+      if (configured) void loadModels()
+      return
+    }
     const result = await loadOpenRouterApiKey()
     setCredentialStatus(result)
     if (result.apiKey) setApiKey(result.apiKey)
   }
   const forgetKey = async () => {
+    if (studioHosted) {
+      await studioDeleteKey()
+      setStudioKeyReady(false)
+      setApiKey('')
+      setCredentialStatus({ available: true, stored: false, message: '스튜디오에서 키를 지웠습니다.' })
+      return
+    }
     setCredentialStatus(await deleteOpenRouterApiKey())
     setApiKey('')
   }
@@ -376,17 +441,16 @@ export function AiAssistantPanel() {
           <div><strong>AI 작업 도우미</strong><span>{project.tables.length}개 테이블의 스키마 문맥</span></div>
         </div>
         <div className="assistant-header-actions">
-          {(aiMessages.length > 0 || aiProposal) && (
-            <button className="icon-button subtle" type="button" title="대화 지우기" aria-label="대화 지우기" onClick={clearAiThread}><Trash2 aria-hidden="true" size={16} /></button>
-          )}
-          <button className={settingsOpen ? 'icon-button subtle active' : 'icon-button subtle'} type="button" title="AI 연결 설정" onClick={() => setSettingsOpen((open) => !open)}><Settings2 aria-hidden="true" size={16} /></button>
+          <button className="icon-button subtle" type="button" title="새 대화" aria-label="새 대화" disabled={aiMessages.length === 0 && !aiProposal} onClick={() => { startNewConversation(); setHistoryOpen(false) }}><SquarePen aria-hidden="true" size={16} /></button>
+          <button className={historyOpen ? 'icon-button subtle active' : 'icon-button subtle'} type="button" title="지난 대화" aria-label="지난 대화" aria-expanded={historyOpen} onClick={() => { setHistoryOpen((open) => !open); setSettingsOpen(false) }}><MessagesSquare aria-hidden="true" size={16} /></button>
+          <button className={settingsOpen ? 'icon-button subtle active' : 'icon-button subtle'} type="button" title="AI 연결 설정" onClick={() => { setSettingsOpen((open) => !open); setHistoryOpen(false) }}><Settings2 aria-hidden="true" size={16} /></button>
           <button className="icon-button subtle" type="button" title="AI 패널 접기" aria-label="AI 패널 접기" onClick={() => setAssistantCollapsed(true)}><ChevronsRight aria-hidden="true" size={16} /></button>
         </div>
       </header>
 
       {settingsOpen && (
         <section className="ai-settings" aria-label="OpenRouter 설정">
-          <div className="ai-settings-heading"><div><strong>OpenRouter 연결</strong><span>키는 화면이나 프로젝트 파일에 저장되지 않습니다.</span></div><button type="button" title="설정 닫기" onClick={() => setSettingsOpen(false)}><X aria-hidden="true" size={15} /></button></div>
+          <div className="ai-settings-heading"><div><strong>OpenRouter 연결</strong><span>{studioHosted ? '키는 스튜디오가 보관합니다. 프로젝트 파일에는 저장되지 않습니다.' : '키는 프로젝트 파일에 저장되지 않습니다.'}</span></div><button type="button" title="설정 닫기" onClick={() => setSettingsOpen(false)}><X aria-hidden="true" size={15} /></button></div>
           <div className="ai-mode-switch" aria-label="모델 요금제">
             <button className={tier === 'free' ? 'active' : ''} type="button" onClick={() => switchTier('free')}>무료</button>
             <button className={tier === 'paid' ? 'active' : ''} type="button" onClick={() => switchTier('paid')}>유료</button>
@@ -397,7 +461,7 @@ export function AiAssistantPanel() {
               <span>상한을 넘으면 요청이 자동으로 막힙니다. 무료 모델은 사용액에 잡히지 않아요.</span>
             </div>
           )}
-          <label><span>API 키</span><input aria-label="OpenRouter API 키" type="password" autoComplete="off" placeholder="sk-or-..." value={apiKey} onChange={(event) => setApiKey(event.target.value)} /></label>
+          <label><span>API 키</span><input aria-label="OpenRouter API 키" type="password" autoComplete="off" placeholder={studioHosted && studioKeyReady ? '저장된 키 사용 중 · 바꾸려면 새 키 입력' : 'sk-or-...'} value={apiKey} onChange={(event) => setApiKey(event.target.value)} /></label>
           {apiKey && <small>현재 입력: {maskApiKey(apiKey)}</small>}
           <div className="ai-key-actions">
             <button type="button" disabled={!apiKey.trim()} onClick={() => void saveKey()}><KeyRound aria-hidden="true" size={13} />보관</button>
@@ -436,6 +500,31 @@ export function AiAssistantPanel() {
           </label>
           {credentialStatus && <small>{credentialStatus.message}</small>}
           {openRouterError && <small className="ai-setting-error">{openRouterError}</small>}
+        </section>
+      )}
+
+      {historyOpen && (
+        <section className="ai-history" aria-label="지난 대화">
+          <div className="ai-settings-heading"><div><strong>지난 대화</strong><span>이 프로젝트에서 나눈 대화입니다. 표 파일과 따로 저장됩니다.</span></div><button type="button" title="닫기" onClick={() => setHistoryOpen(false)}><X aria-hidden="true" size={15} /></button></div>
+          {aiConversations.length === 0 ? (
+            <p className="ai-history-empty">아직 저장된 대화가 없습니다.</p>
+          ) : (
+            <ul>
+              {[...aiConversations].sort((left, right) => right.updatedAt.localeCompare(left.updatedAt)).map((conversation) => (
+                <li key={conversation.id} className={conversation.id === activeConversationId ? 'active' : undefined}>
+                  <button type="button" className="ai-history-open" onClick={() => { openConversation(conversation.id); setHistoryOpen(false) }}>
+                    <strong>{conversation.title}</strong>
+                    <small>
+                      {new Date(conversation.updatedAt).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                      {' · '}{conversation.messages.length}개 메시지
+                      {conversation.tokens.input + conversation.tokens.output > 0 && ` · ${(conversation.tokens.input + conversation.tokens.output).toLocaleString()} 토큰`}
+                    </small>
+                  </button>
+                  <button type="button" className="ai-history-delete" title="대화 삭제" aria-label={`${conversation.title} 삭제`} onClick={() => deleteConversation(conversation.id)}><Trash2 aria-hidden="true" size={14} /></button>
+                </li>
+              ))}
+            </ul>
+          )}
         </section>
       )}
 
@@ -553,4 +642,23 @@ export function AiAssistantPanel() {
       </div>
     </aside>
   )
+}
+
+const MODEL_CHOICE_KEY = 'gsw-ai-model-choice'
+
+function readModelChoice(): { tier: AiTier; modelId: string } {
+  try {
+    const raw = JSON.parse(window.localStorage.getItem(MODEL_CHOICE_KEY) ?? '{}') as { tier?: string; modelId?: string }
+    return { tier: raw.tier === 'paid' ? 'paid' : 'free', modelId: typeof raw.modelId === 'string' ? raw.modelId : '' }
+  } catch {
+    return { tier: 'free', modelId: '' }
+  }
+}
+
+function writeModelChoice(choice: { tier: AiTier; modelId: string }) {
+  try {
+    window.localStorage.setItem(MODEL_CHOICE_KEY, JSON.stringify(choice))
+  } catch {
+    // 저장 공간을 못 쓰면 다음에 다시 고르면 된다.
+  }
 }

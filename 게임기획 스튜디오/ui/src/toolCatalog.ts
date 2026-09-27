@@ -60,13 +60,6 @@ export function availableToolCategories(tools: ToolDefinition[]) {
   });
 }
 
-export function groupToolsByCategory(tools: ToolDefinition[]) {
-  return availableToolCategories(tools).map((category) => ({
-    category,
-    tools: tools.filter((tool) => toolCategory(tool) === category),
-  }));
-}
-
 export function splitToolsByConnection(tools: ToolDefinition[]) {
   return {
     workspace: tools.filter(isWorkspaceConnectable),

@@ -30,4 +30,4 @@
 
 ## 실행 파일
 
-실행 UI는 `ui/src/main.tsx`에서 `ui/src/devtoys-shell.css`를 로드한다. `ui/src/nimbalyst-shell.css`는 초기 비교 기록이며 실행 번들에 포함하지 않는다.
+실행 UI는 `ui/src/main.tsx`에서 공통 셸용 `ui/src/devtoys-shell.css`와 도구 보관함 전용 `ui/src/catalog.css`를 로드한다. 초기 비교용 Nimbalyst 파일은 실행 코드와 함께 관리할 이유가 없어 2026-09-25에 제거했다.

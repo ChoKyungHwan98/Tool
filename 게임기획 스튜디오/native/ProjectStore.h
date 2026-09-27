@@ -40,6 +40,7 @@ private:
 
   json createProject(const json& command);
   void activateProject(const std::string& projectId);
+  void trashProject(const std::string& projectId);
   void activateTool(const std::string& toolId);
   void saveWorkspaceGraph(const json& command);
   void selectProjectHome();
@@ -52,6 +53,9 @@ private:
   json listTableProjects(const json& command) const;
   json writeTableProject(const json& command);
   json trashTableProject(const json& command);
+  json loadTableChat(const json& command) const;
+  json saveTableChat(const json& command);
+  std::filesystem::path tableChatPath(const std::string& projectId) const;
   json tableProjectRecord(const std::filesystem::path& file, const json& document) const;
   std::filesystem::path findTableProject(const std::string& projectId) const;
 

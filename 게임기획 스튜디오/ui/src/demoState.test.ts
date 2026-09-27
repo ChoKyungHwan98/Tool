@@ -13,6 +13,31 @@ describe('studio demo state', () => {
     expect(next.registry.projects).toHaveLength(1);
   });
 
+  it('removes a trashed project from the home registry', () => {
+    const created = reduceDemoState(createEmptySnapshot(), {
+      type: 'project:create', name: '삭제 대상', parentDirectory: 'C:\\Projects',
+    });
+    const projectId = created.registry.projects[0].id;
+    const trashed = reduceDemoState(created, { type: 'project:trash', projectId });
+    expect(trashed.registry.projects).toHaveLength(0);
+    expect(trashed.registry.lastProjectId).toBeNull();
+    expect(trashed.activeProject).toBeNull();
+  });
+
+  it('activates another registered project after deleting the active project', () => {
+    const first = reduceDemoState(createEmptySnapshot(), {
+      type: 'project:create', name: '첫 프로젝트', parentDirectory: 'C:\\Projects',
+    });
+    const second = reduceDemoState(first, {
+      type: 'project:create', name: '둘째 프로젝트', parentDirectory: 'C:\\Projects',
+    });
+    const trashed = reduceDemoState(second, { type: 'project:trash', projectId: second.activeProject!.id });
+    const activated = reduceDemoState(trashed, { type: 'project:activate', projectId: first.activeProject!.id });
+
+    expect(activated.activeProject?.id).toBe(first.activeProject!.id);
+    expect(activated.activeProject?.name).toBe('첫 프로젝트');
+  });
+
   it('keeps tools independent when they are opened in a workspace', () => {
     let state = reduceDemoState(createEmptySnapshot(), {
       type: 'project:create', name: 'A', parentDirectory: 'C:\\Projects',

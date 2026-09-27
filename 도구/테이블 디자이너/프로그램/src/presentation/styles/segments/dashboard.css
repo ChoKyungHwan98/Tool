@@ -90,7 +90,7 @@
   border-radius: 999px;
   background: rgb(20 32 51 / 8%);
   color: #5b6b80;
-  font-size: 10px;
+  font-size: 12px;
   font-variant-numeric: tabular-nums;
 }
 
@@ -128,8 +128,7 @@
 }
 
 .project-panel {
-  width: min(1200px, 100%);
-  margin: 0 auto;
+  width: 100%;
 }
 
 .dashboard-section-heading {
@@ -250,7 +249,7 @@
   border-bottom: 1px solid #e4e9ee;
   background: #fafbfc;
   color: #8797a9;
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 0.02em;
 }
 
@@ -317,7 +316,7 @@
   color: #8493a5;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .project-row-metric {
@@ -340,7 +339,7 @@
   border-radius: 4px;
   color: #27663a;
   background: #eef8f0;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .project-list-more {
@@ -460,7 +459,7 @@
 .example-project-list strong,
 .example-project-list small { display: block; }
 .example-project-list strong { font-size: 13px; }
-.example-project-list small { margin-top: 3px; color: #718096; font-size: 11px; }
+.example-project-list small { margin-top: 3px; color: #718096; font-size: 12px; }
 
 /* ---------- 삭제 확인 다이얼로그 ---------- */
 
@@ -501,7 +500,7 @@
 .recovery-list strong,
 .recovery-list small { display: block; }
 .recovery-list strong { font-size: 12px; }
-.recovery-list small { margin-top: 3px; color: #718096; font-size: 11px; }
+.recovery-list small { margin-top: 3px; color: #718096; font-size: 12px; }
 
 /* ---------- 반응형 ---------- */
 
@@ -574,4 +573,345 @@
   .project-row-metric:nth-of-type(3),
   .project-row-metric:nth-of-type(4) { display: none; }
   .example-project-list { grid-template-columns: 1fr; }
+}
+
+/* ──────────────────────────────────────────────────────────────────
+   게임기획 도구 홈 화면 디자인 지침 적용
+   기준: 게임기획 스튜디오/SHARED_PRODUCT_UI_GUIDELINE.md
+   이 도구의 홈은 카드 그리드가 아니라 목록형이다. 좌측 레일 + 목록 패널이라는
+   레이아웃은 그대로 두고 색·글자·간격·검색/버튼 규격만 공통 기준에 맞춘다.
+   ────────────────────────────────────────────────────────────────── */
+
+.dashboard--hub {
+  background: #f2f4f6;
+  color: #333d4b;
+  font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  text-rendering: auto;
+  font-synthesis: weight style small-caps;
+}
+
+/* ---------- 레일 ---------- */
+
+.dashboard-rail {
+  width: 260px;
+  padding: 24px 16px;
+  border-right: 1px solid #e5e8eb;
+  background: #fff;
+}
+
+.dashboard-rail-brand {
+  padding: 0 8px;
+  margin-bottom: 40px;
+}
+
+.dashboard-rail-brand strong {
+  margin-top: 0;
+  color: #191f28;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.dashboard-rail-groups {
+  padding: 0;
+}
+
+.dashboard-rail-group {
+  gap: 4px;
+  padding: 0;
+}
+
+.dashboard-rail-group + .dashboard-rail-group {
+  margin-top: 24px;
+  padding-top: 0;
+  border-top: 0;
+}
+
+/* 그룹 이름: 기준 화면(AI 리뷰데이터 분석)의 '프로젝트 관리'와 같은 값 */
+.dashboard-rail-group-label {
+  margin-bottom: 4px; /* 그룹 gap 4px과 합쳐 기준 화면의 8px */
+  padding: 0 8px;
+  color: #5f6977;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.dashboard-rail-item {
+  position: relative;
+  min-height: 0;
+  padding: 12px 16px;
+  gap: 10px;
+  border: 0;
+  border-radius: 12px;
+  color: #191f28;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.dashboard-rail-item svg { color: #8b95a1; }
+.dashboard-rail-item:hover { background: #fafafa; }
+
+/* 선택돼도 글자 두께를 바꾸지 않는다. 두께가 바뀌면 글자 위치가 흔들린다. */
+.dashboard-rail-item.active {
+  background: #f2f4f6;
+  color: #1b64da;
+  font-weight: 500;
+}
+
+.dashboard-rail-item.active::before {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 50%;
+  width: 3px;
+  height: 16px;
+  border-radius: 2px;
+  background: #3182f6;
+  transform: translateY(-50%);
+}
+
+.dashboard-rail-item.active svg { color: #3182f6; }
+
+/* 넓은 화면에서는 기준 화면처럼 문구만 둔다. 아이콘은 레일이 접힐 때(1100px 이하)만 보인다. */
+@media (min-width: 1101px) {
+  .dashboard-rail-item svg { display: none; }
+}
+@media (max-width: 1100px) {
+  .dashboard-rail-group-label { display: none; }
+}
+
+.dashboard-rail-actions {
+  margin-top: 16px;
+  padding: 16px 0 0;
+  gap: 8px;
+  border-top: 1px solid #e5e8eb;
+}
+
+.dashboard .dashboard-rail-actions .btn-primary {
+  min-width: 143px;
+  height: 42px;
+  padding: 0 20px;
+  justify-content: flex-start;
+  gap: 6px;
+  border: 0;
+  border-radius: 12px;
+  background: #191f28;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: normal;
+}
+
+.dashboard .dashboard-rail-actions .btn-primary:hover { background: #000; }
+
+.dashboard .dashboard-rail-actions .btn-ghost {
+  height: 42px;
+  padding: 0 16px;
+  justify-content: flex-start;
+  gap: 6px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: #8b95a1;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: normal;
+}
+
+.dashboard .dashboard-rail-actions .btn-ghost:hover { background: #fafafa; color: #333d4b; }
+
+/* ---------- 본문 ---------- */
+
+.dashboard-main {
+  padding: 40px 60px;
+  background: linear-gradient(135deg, #f2f4f6 0%, #e8f3ff 100%);
+  scrollbar-width: thin;
+  scrollbar-gutter: stable;
+}
+
+/* 스크롤바 너비를 고정해 본문·검색·목록의 가로 위치가 도구마다 달라지지 않게 한다. */
+.dashboard-main::-webkit-scrollbar { width: 10px; }
+.dashboard-main::-webkit-scrollbar-thumb { border-radius: 999px; background: #d7dce3; }
+.dashboard-main::-webkit-scrollbar-track { background: transparent; }
+
+.dashboard-section-heading {
+  min-height: 0;
+  margin-bottom: 32px;
+  align-items: flex-end;
+  gap: 16px;
+}
+
+.dashboard-section-heading h1 {
+  margin: 0 0 16px;
+  color: #191f28;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.5;
+  letter-spacing: 0;
+}
+
+.dashboard-section-heading span {
+  color: #8b95a1;
+  font-size: 13px;
+}
+
+.dashboard-list-controls { gap: 16px; }
+
+/* 검색은 아이콘 요소를 감싼 label이 아니라 입력칸 하나로 만든다.
+   아이콘은 background image로 두어 글자 시작점과 아이콘 크기가 흔들리지 않게 한다. */
+.dashboard-search {
+  box-sizing: border-box;
+  display: block;
+  width: 280px;
+  height: 44px;
+  padding: 12px 40px 12px 16px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background-color: rgb(255 255 255 / 60%);
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="%238b95a1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px 16px;
+  box-shadow: none;
+  color: #333d4b;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: normal;
+  transition: border-color 0.12s ease, background-color 0.12s ease;
+}
+
+.dashboard-search::placeholder { color: #8b95a1; }
+.dashboard-search::-webkit-search-cancel-button { display: none; }
+
+.dashboard-search:focus {
+  outline: 0;
+  border-color: #3182f6;
+  background-color: #fff;
+  box-shadow: none;
+}
+
+.dashboard-sort {
+  height: 44px;
+  padding: 4px;
+  gap: 2px;
+  border: 1px solid #e5e8eb;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.dashboard-sort button {
+  padding: 0 14px;
+  border-radius: 9px;
+  color: #8b95a1;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: normal;
+}
+
+.dashboard-sort button:hover { background: #fafafa; color: #333d4b; }
+
+.dashboard-sort button.active {
+  background: #f2f4f6;
+  color: #3182f6;
+  font-weight: 500;
+}
+
+/* ---------- 목록 ---------- */
+
+.project-list {
+  border: 1px solid #e5e8eb;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 4px 20px rgb(0 0 0 / 6%);
+}
+
+.project-list-head {
+  height: 44px;
+  padding: 0 46px 0 20px;
+  border-bottom: 1px solid #e5e8eb;
+  background: transparent;
+  color: #8b95a1;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+.project-list-row { border-bottom: 1px solid #e5e8eb; }
+
+.project-row-main {
+  height: 56px;
+  padding: 0 8px 0 20px;
+}
+
+.project-row-main:hover { background: #fafafa; }
+
+.project-row-main:focus-visible {
+  outline: 2px solid #3182f6;
+  outline-offset: -2px;
+}
+
+.project-row-icon { color: #8b95a1; }
+
+.project-row-name strong {
+  color: #191f28;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.project-row-name small {
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: #f2f4f6;
+  color: #8b95a1;
+  font-size: 12px;
+}
+
+.project-row-metric {
+  color: #333d4b;
+  font-size: 14px;
+}
+
+.project-row-date {
+  color: #8b95a1;
+  font-size: 13px;
+}
+
+.project-list-more {
+  height: 44px;
+  border-top: 1px solid #e5e8eb;
+  background: transparent;
+  color: #3182f6;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.project-list-more:hover { background: #fafafa; }
+
+.project-row-menu {
+  padding: 5px;
+  border: 1px solid #e5e8eb;
+  border-radius: 12px;
+  box-shadow: 0 18px 48px rgb(25 31 40 / 18%);
+}
+
+.project-row-menu button {
+  min-height: 36px;
+  padding: 0 11px;
+  border-radius: 8px;
+  color: #333d4b;
+  font-size: 13px;
+}
+
+.project-row-menu button:not(:disabled):hover { background: #f2f4f6; }
+
+.project-list-empty {
+  border: 1px dashed #e5e8eb;
+  border-radius: 16px;
+  background: #fff;
+  color: #8b95a1;
 }

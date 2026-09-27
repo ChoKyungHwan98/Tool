@@ -1,0 +1,350 @@
+import { createHash } from 'node:crypto';
+import {
+  VisualCritiqueReportSchema,
+  contentHash,
+  type AIProvider,
+  type InformationPlan,
+  type ProviderRunRecord,
+  type SemanticBlock,
+  type SlideIR,
+  type VisualCriticFixture,
+  type VisualCriticFinding,
+  type VisualIssueType,
+  type VisualCritiqueReport,
+} from '@game-presentation/contracts';
+import type { HardGateResult } from './hard-gate.js';
+
+export const VISUAL_CRITIC_RUBRIC = [
+  { id: 'hierarchy', question: '핵심 정보와 보조 정보의 위계가 분명한가?' },
+  { id: 'first-fixation', question: '첫 시선이 메시지의 핵심으로 향하는가?' },
+  { id: 'reading-order', question: '의도한 읽는 순서를 바로 따라갈 수 있는가?' },
+  { id: 'grouping', question: '관련 정보가 하나의 덩어리로 이해되는가?' },
+  { id: 'space-use', question: '여백이 정보 이해를 돕고 화면이 비거나 답답하지 않은가?' },
+  { id: 'density', question: '정보가 지나치게 빽빽하거나 성기지 않은가?' },
+  { id: 'typography-hierarchy', question: '글자 크기·굵기·정렬이 역할 차이를 보여주는가?' },
+  { id: 'relation-clarity', question: '원인·전환·결과 관계가 선명한가?' },
+  { id: 'decorative-interference', question: '장식이 정보보다 강하게 보이지 않는가?' },
+  {
+    id: 'submission-readiness',
+    question: '전문적인 게임 기획서/발표자료로 보이며, 임시 와이어프레임이나 자동 배치 prototype처럼 보이지 않고, 정보량 대비 공간 활용과 시각적 완성도·cohesion이 실제 제출 수준인가?',
+  },
+] as const;
+
+export const SUBMISSION_READINESS_ANCHORS = {
+  ready: '실제 제출물에 그대로 넣을 수 있다. 명백한 hierarchy, space, grouping, typography, relation 문제가 없고 prototype 또는 wireframe처럼 보이지 않는다.',
+  'needs-review': '내용은 이해할 수 있고 치명적 오류는 없지만 시각적 완성도, 공간 활용, 위계, 정렬 또는 그룹화에 사람이 손볼 부분이 남아 있다.',
+  'not-ready': '읽는 순서, 위계, 그룹화, 밀도, 공간 사용 또는 시각 구조에 명확한 문제가 있어 제출용으로 사용할 수 없다.',
+} as const;
+
+const SYSTEM_INSTRUCTION = `당신은 게임 기획서의 실제 렌더 화면만 검수하는 Visual Critic이다.
+주어진 PNG를 반드시 직접 보고, 함께 제공된 작은 의미 요약과 설명 구조는 의도 확인에만 사용한다.
+Hard Gate는 이미 통과했다. 원문, 숫자, 단위, 관계를 고치거나 새 내용을 쓰지 않는다.
+각 finding은 화면에서 확인되는 구체적인 문제, 그 이유, 내용 변경 없이 가능한 시각 수정 방향을 적는다.
+"예쁘게 만든다", "개선한다" 같은 추상적인 조언은 금지한다.
+submissionReadiness는 제공된 세 단계 기준을 엄격하게 적용한다. 내용이 읽힌다는 이유만으로 ready를 주지 않는다.
+ready는 실제 제출물에 그대로 넣을 수 있고 명백한 시각 문제가 없을 때만 선택하며, 이 경우 findings를 비운다.
+needs-review는 이해 가능하지만 사람이 시각적으로 손볼 부분이 남은 결과다. not-ready는 구조적 문제가 제출을 막는 결과다.
+문제가 제출을 막을 정도가 아니면 severity를 과장하지 않는다.
+target에는 제공된 block/group ID를 우선 사용하고, 특정할 수 없으면 kind=page, ids=["page"]를 사용한다.`;
+
+function blockTexts(block: SemanticBlock): string[] {
+  switch (block.kind) {
+    case 'heading':
+    case 'paragraph': return [block.text.text];
+    case 'bullet-group': return block.items.map((item) => item.text);
+    case 'metric': return [block.label.text, block.value.text, ...(block.unit === undefined ? [] : [block.unit.text])];
+    case 'key-value': return [block.key.text, block.value.text];
+    case 'table': return [...block.columns, ...block.rows.flat()].map((item) => item.text);
+    case 'mechanic-step': return [block.label.text, ...(block.detail === undefined ? [] : [block.detail.text])];
+    case 'state': return [block.name.text, ...(block.description === undefined ? [] : [block.description.text])];
+    case 'timeline-event': return [block.label.text, ...(block.time === undefined ? [] : [block.time.text])];
+    case 'boss-phase': return [block.label.text, block.threshold.text, ...block.behaviors.map((item) => item.text)];
+    case 'resource-node': return [block.label.text, ...(block.amount === undefined ? [] : [block.amount.text])];
+    case 'hierarchy-node': return [block.label.text];
+    case 'ui-region': return [block.regionLabel.text, block.explanation.text];
+    case 'exception': return [block.condition.text, block.outcome.text];
+    case 'test-criterion': return [block.criterion.text, ...(block.target === undefined ? [] : [block.target.text])];
+  }
+}
+
+function semanticSummary(slide: SlideIR) {
+  return {
+    slideId: slide.slideId,
+    blocks: slide.blocks.map((block) => ({
+      id: block.id,
+      kind: block.kind,
+      role: block.role,
+      importance: block.importance,
+      text: blockTexts(block),
+    })),
+    relations: slide.relations.map((relation) => ({
+      id: relation.id,
+      from: relation.fromBlockId,
+      to: relation.toBlockId,
+      type: relation.type,
+    })),
+  };
+}
+
+function informationStructure(plan: InformationPlan) {
+  return {
+    informationPlanId: plan.informationPlanId,
+    semanticShape: plan.semanticShape,
+    primaryArtifactBlockId: plan.primaryArtifactBlockId,
+    readingOrder: plan.readingOrder,
+    groups: plan.groups.map((group) => ({
+      id: group.groupId,
+      role: group.role,
+      order: group.order,
+      blockIds: group.blockIds,
+    })),
+    relationIds: plan.relationIds,
+  };
+}
+
+export type VisualCriticInputTrace = {
+  requestId: string;
+  artifactId: string;
+  imageSha256: string;
+  imageBytes: number;
+  compactContextBytes: number;
+  contextBudgetBytes: number;
+  contextArtifactIds: string[];
+  includedFields: string[];
+};
+
+export type VisualCriticRun = {
+  report: VisualCritiqueReport;
+  run: ProviderRunRecord;
+  inputTrace: VisualCriticInputTrace;
+  guardrailIssues: string[];
+};
+
+const VisualCritiqueModelOutputSchema = VisualCritiqueReportSchema.omit({ schemaVersion: true });
+
+export function criticGuardrailIssues(report: VisualCritiqueReport): string[] {
+  const issues: string[] = [];
+  if (report.sourceChangeSuggested) issues.push('Critic이 원문 변경을 제안한다고 표시했습니다.');
+  const forbidden = [
+    /원문.{0,8}(바꾸|변경|수정|삭제|추가)/u,
+    /(문구|문장|카피|내용).{0,8}(바꾸|변경|수정|삭제|추가)/u,
+    /(수치|숫자|단위).{0,8}(바꾸|변경|수정|삭제|추가)/u,
+  ];
+  const generic = [/예쁘게/u, /더 좋게/u, /전반적으로 개선/u];
+  for (const finding of report.findings) {
+    if (forbidden.some((pattern) => pattern.test(finding.revisionDirection))) {
+      issues.push(`${finding.findingId}: 원문 또는 수치 변경 제안`);
+    }
+    if (generic.some((pattern) => pattern.test(finding.revisionDirection))) {
+      issues.push(`${finding.findingId}: 구체적이지 않은 수정 제안`);
+    }
+  }
+  return issues;
+}
+
+export async function runVisualCritic(input: {
+  provider: AIProvider;
+  pngBytes: Uint8Array;
+  artifactId: string;
+  goal: string;
+  slide: SlideIR;
+  informationPlan: InformationPlan;
+  hardGate: HardGateResult;
+  contextBudgetBytes?: number;
+  requestIdSalt?: string;
+  rubricIds?: readonly VisualIssueType[];
+}): Promise<VisualCriticRun> {
+  if (!input.hardGate.passed) {
+    throw new Error('Hard Gate FAIL 결과는 Visual Critic으로 보낼 수 없습니다.');
+  }
+  const capabilities = await input.provider.capabilities();
+  if (!capabilities.vision || !capabilities.structuredOutput) {
+    throw new Error('선택한 provider는 vision과 structured output을 모두 지원해야 합니다.');
+  }
+
+  const rubricIds = input.rubricIds === undefined ? undefined : new Set(input.rubricIds);
+  const rubric = rubricIds === undefined
+    ? VISUAL_CRITIC_RUBRIC
+    : VISUAL_CRITIC_RUBRIC.filter((item) => rubricIds.has(item.id));
+  if (rubric.length === 0 || (rubricIds !== undefined && rubric.length !== rubricIds.size)) {
+    throw new Error('Visual Critic rubric 범위가 유효하지 않습니다.');
+  }
+  const scopedSystemInstruction = rubricIds === undefined
+    ? SYSTEM_INSTRUCTION
+    : `${SYSTEM_INSTRUCTION}\n이번 실행에서는 제공된 rubric의 issueType만 평가하고 findings에도 그 issueType만 사용한다.`;
+  const compactState = {
+    artifactId: input.artifactId,
+    pageGoal: input.goal,
+    semanticSummary: semanticSummary(input.slide),
+    informationPlan: informationStructure(input.informationPlan),
+    rubric,
+    submissionReadinessAnchors: SUBMISSION_READINESS_ANCHORS,
+    hardGate: {
+      status: 'passed',
+      programFindingCount: 0,
+      sourceFidelityFindingCount: 0,
+    },
+  };
+  const imageSha256 = createHash('sha256').update(input.pngBytes).digest('hex');
+  const requestId = `visual-critic-${contentHash({
+    artifactId: input.artifactId,
+    imageSha256,
+    compactState,
+    model: input.provider.model,
+    requestIdSalt: input.requestIdSalt ?? '',
+  }).slice(0, 20)}`;
+  const contextArtifactIds = [
+    input.slide.slideId,
+    input.informationPlan.informationPlanId,
+    input.artifactId,
+    `png:${imageSha256}`,
+  ];
+  const compactContextBytes = Buffer.byteLength(JSON.stringify(compactState), 'utf8');
+  const contextBudgetBytes = input.contextBudgetBytes ?? 5_000_000;
+  const result = await input.provider.generateStructured(
+    {
+      requestId,
+      task: 'visual-critique',
+      contextHash: contentHash({ compactState, imageSha256 }),
+      systemInstruction: scopedSystemInstruction,
+      compactState,
+      imageEvidence: { mimeType: 'image/png', bytes: input.pngBytes },
+      contextArtifactIds,
+      contextBudgetBytes,
+      maxOutputTokens: 2_000,
+    },
+    VisualCritiqueModelOutputSchema,
+  );
+  const report = VisualCritiqueReportSchema.parse({ schemaVersion: '0.1', ...result.value });
+  if (report.artifactId !== input.artifactId) {
+    throw new Error('Critic 응답이 다른 artifact를 가리킵니다.');
+  }
+  if (rubricIds !== undefined && report.findings.some((finding) => !rubricIds.has(finding.issueType))) {
+    throw new Error('Critic이 요청한 rubric 범위 밖의 finding을 반환했습니다.');
+  }
+  return {
+    report,
+    run: result.run,
+    inputTrace: {
+      requestId,
+      artifactId: input.artifactId,
+      imageSha256,
+      imageBytes: input.pngBytes.byteLength,
+      compactContextBytes,
+      contextBudgetBytes,
+      contextArtifactIds,
+      includedFields: ['actual PNG', 'page goal', 'semantic summary', 'InformationPlan core', 'rubric', 'readiness anchors', 'Hard Gate PASS'],
+    },
+    guardrailIssues: criticGuardrailIssues(report),
+  };
+}
+
+function issueMatches(expected: VisualCriticFixture['expectedFindings'][number], actual: VisualCriticFinding): boolean {
+  const allowedTypes = new Set([expected.issueType, ...expected.acceptableIssueTypes]);
+  if (!allowedTypes.has(actual.issueType)) return false;
+  if (expected.target.kind === 'page' || actual.target.kind === 'page') return true;
+  return expected.target.ids.some((id) => actual.target.ids.includes(id));
+}
+
+function specificSuggestion(finding: VisualCriticFinding): boolean {
+  if (finding.revisionDirection.length < 18) return false;
+  if (/예쁘게|더 좋게|전반적으로 개선/u.test(finding.revisionDirection)) return false;
+  return /(크기|굵기|간격|정렬|위치|이동|축소|확대|분리|묶|대비|선|여백|영역|순서|연결|강조|스케일|가로형|세로형|외곽선)/u.test(
+    finding.revisionDirection,
+  );
+}
+
+export type CriticBenchmarkResult = {
+  fixtureId: string;
+  expectedCount: number;
+  actualFindingCount: number;
+  actualActionableCount: number;
+  matchedExpectedCount: number;
+  problemRecall: number | null;
+  unmatchedActionableCount: number;
+  falsePositiveCount: number | null;
+  falsePositiveRate: number | null;
+  readinessMatched: boolean;
+  expectedSubmissionReadiness: VisualCriticFixture['expectedSubmissionReadiness'];
+  actualSubmissionReadiness: VisualCritiqueReport['submissionReadiness'];
+  severityExactCount: number;
+  severityAppropriateCount: number;
+  specificSuggestionCount: number;
+  positiveFixturePassed: boolean | null;
+  fixturePassed: boolean;
+  guardrailIssues: string[];
+  matches: Array<{
+    expectedIssueType: string;
+    actualFindingId: string | null;
+    severityExact: boolean;
+    suggestionSpecific: boolean;
+  }>;
+};
+
+export function benchmarkCriticReport(
+  fixture: VisualCriticFixture,
+  report: VisualCritiqueReport,
+): CriticBenchmarkResult {
+  const actionable = report.findings.filter((finding) => finding.severity !== 'info');
+  const consumed = new Set<string>();
+  const matches = fixture.expectedFindings.map((expected) => {
+    const actual = report.findings.find((candidate) => !consumed.has(candidate.findingId) && issueMatches(expected, candidate));
+    if (actual !== undefined) consumed.add(actual.findingId);
+    return {
+      expectedIssueType: expected.issueType,
+      actualFindingId: actual?.findingId ?? null,
+      severityExact: actual?.severity === expected.severity,
+      suggestionSpecific: actual === undefined ? false : specificSuggestion(actual),
+    };
+  });
+  const unmatchedActionableCount = actionable.filter((finding) => !consumed.has(finding.findingId)).length;
+  const unmatchedFindingCount = report.findings.filter((finding) => !consumed.has(finding.findingId)).length;
+  const falsePositiveCount = fixture.labelCoverage === 'exhaustive' ? unmatchedFindingCount : null;
+  const expectedCount = fixture.expectedFindings.length;
+  const readinessMatched = fixture.expectedSubmissionReadiness === report.submissionReadiness;
+  const matchedExpectedCount = matches.filter((match) => match.actualFindingId !== null).length;
+  const severityExactCount = matches.filter((match) => match.severityExact).length;
+  const specificSuggestionCount = matches.filter((match) => match.suggestionSpecific).length;
+  const positiveFixturePassed = fixture.expectedSubmissionReadiness === 'ready'
+    ? fixture.positiveAudit !== undefined
+      && report.findings.length === 0
+      && report.submissionReadiness === 'ready'
+    : null;
+  const guardrailIssues = criticGuardrailIssues(report);
+  return {
+    fixtureId: fixture.fixtureId,
+    expectedCount,
+    actualFindingCount: report.findings.length,
+    actualActionableCount: actionable.length,
+    matchedExpectedCount,
+    problemRecall: expectedCount === 0 ? null : matchedExpectedCount / expectedCount,
+    unmatchedActionableCount,
+    falsePositiveCount,
+    falsePositiveRate: falsePositiveCount === null
+      ? null
+      : report.findings.length === 0 ? 0 : falsePositiveCount / report.findings.length,
+    readinessMatched,
+    expectedSubmissionReadiness: fixture.expectedSubmissionReadiness,
+    actualSubmissionReadiness: report.submissionReadiness,
+    severityExactCount,
+    severityAppropriateCount: matches.filter((match) => {
+      if (match.actualFindingId === null) return false;
+      const expected = fixture.expectedFindings.find((finding) => finding.issueType === match.expectedIssueType);
+      const actual = report.findings.find((finding) => finding.findingId === match.actualFindingId);
+      if (expected === undefined || actual === undefined) return false;
+      const ranks = { info: 0, warning: 1, error: 2 } as const;
+      return Math.abs(ranks[expected.severity] - ranks[actual.severity]) <= 1;
+    }).length,
+    specificSuggestionCount,
+    positiveFixturePassed,
+    fixturePassed: matchedExpectedCount === expectedCount
+      && (falsePositiveCount ?? 0) === 0
+      && readinessMatched
+      && severityExactCount === expectedCount
+      && specificSuggestionCount === expectedCount
+      && (positiveFixturePassed ?? true)
+      && guardrailIssues.length === 0,
+    guardrailIssues,
+    matches,
+  };
+}

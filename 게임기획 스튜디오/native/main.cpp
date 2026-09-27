@@ -15,10 +15,12 @@
 #include <stdexcept>
 #include <string>
 #include <thread>
+#include <vector>
 
 #include "ProjectStore.h"
 #include "OpenRouterService.h"
 #include "PromptLibraryStore.h"
+#include "DownloadHistory.h"
 
 using Microsoft::WRL::Callback;
 using Microsoft::WRL::ComPtr;
@@ -27,10 +29,11 @@ using json = nlohmann::json;
 namespace {
 
 constexpr wchar_t kWindowClass[] = L"GameDesignStudioWindow";
-constexpr wchar_t kWindowTitle[] = L"게임기획 스튜디오";
+constexpr wchar_t kWindowTitle[] = L"도구 보관함";
 constexpr wchar_t kSingleInstanceMutex[] = L"Local\\GameDesignStudio.SingleInstance";
 constexpr UINT kTrayMessage = WM_APP + 17;
 constexpr UINT kAsyncJsonMessage = WM_APP + 18;
+constexpr UINT kRestartReviewServerMessage = WM_APP + 19;
 constexpr UINT kTrayOpen = 41001;
 constexpr UINT kTrayQuit = 41002;
 
@@ -41,6 +44,9 @@ ComPtr<ICoreWebView2> g_webView;
 std::unique_ptr<ProjectStore> g_store;
 std::shared_ptr<OpenRouterService> g_openRouter;
 std::unique_ptr<PromptLibraryStore> g_promptLibrary;
+std::unique_ptr<DownloadHistory> g_downloads;
+HANDLE g_reviewAnalyticsProcess = nullptr;
+HANDLE g_pptDesignerProcess = nullptr;
 bool g_allowExit = false;
 bool g_closeNoticeShown = false;
 
@@ -70,6 +76,130 @@ std::filesystem::path executableDirectory() {
   }
   buffer.resize(length);
   return std::filesystem::path(buffer).parent_path();
+}
+
+std::filesystem::path reviewAnalyticsProgramDirectory() {
+  const auto executable = executableDirectory();
+  const std::vector<std::filesystem::path> candidates = {
+    executable / L"도구" / L"AI 리뷰데이터 분석" / L"프로그램",
+    executable.parent_path().parent_path().parent_path() /
+      L"도구" / L"AI 리뷰데이터 분석" / L"프로그램",
+    std::filesystem::current_path() / L"도구" / L"AI 리뷰데이터 분석" / L"프로그램",
+  };
+  for (const auto& candidate : candidates) {
+    if (std::filesystem::exists(candidate / L"main.py")) return candidate;
+  }
+  return {};
+}
+
+void startReviewAnalyticsServer() {
+  const auto programDirectory = reviewAnalyticsProgramDirectory();
+  if (programDirectory.empty()) return;
+
+  const auto bundledPython = programDirectory / L"venv" / L"Scripts" / L"python.exe";
+  const std::wstring python = std::filesystem::exists(bundledPython)
+    ? bundledPython.wstring()
+    : L"python.exe";
+  const std::wstring commandLine =
+    L"\"" + python + L"\" -m uvicorn main:app --host 127.0.0.1 --port 8765";
+  std::vector<wchar_t> mutableCommand(commandLine.begin(), commandLine.end());
+  mutableCommand.push_back(L'\0');
+
+  // The key never touches the review tool's files.  It is read from Windows
+  // Credential Manager only while starting this local child process.
+  std::vector<wchar_t> previousKey;
+  const DWORD previousKeyLength = GetEnvironmentVariableW(L"OPENROUTER_API_KEY", nullptr, 0);
+  const bool hadPreviousKey = previousKeyLength > 0;
+  if (hadPreviousKey) {
+    previousKey.resize(previousKeyLength);
+    GetEnvironmentVariableW(L"OPENROUTER_API_KEY", previousKey.data(), previousKeyLength);
+  }
+  std::string storedKey;
+  if (g_openRouter) storedKey = OpenRouterService::readApiKey();
+  if (!storedKey.empty()) SetEnvironmentVariableW(L"OPENROUTER_API_KEY", utf8ToWide(storedKey).c_str());
+
+  STARTUPINFOW startup{};
+  startup.cb = sizeof(startup);
+  PROCESS_INFORMATION process{};
+  const bool created = CreateProcessW(
+      nullptr,
+      mutableCommand.data(),
+      nullptr,
+      nullptr,
+      FALSE,
+      CREATE_NO_WINDOW | CREATE_UNICODE_ENVIRONMENT,
+      nullptr,
+      programDirectory.c_str(),
+      &startup,
+      &process) != FALSE;
+
+  if (hadPreviousKey) SetEnvironmentVariableW(L"OPENROUTER_API_KEY", previousKey.data());
+  else SetEnvironmentVariableW(L"OPENROUTER_API_KEY", nullptr);
+  if (!created) return;
+
+  CloseHandle(process.hThread);
+  g_reviewAnalyticsProcess = process.hProcess;
+}
+
+void stopReviewAnalyticsServer() {
+  if (!g_reviewAnalyticsProcess) return;
+  if (WaitForSingleObject(g_reviewAnalyticsProcess, 0) == WAIT_TIMEOUT) {
+    TerminateProcess(g_reviewAnalyticsProcess, 0);
+    WaitForSingleObject(g_reviewAnalyticsProcess, 1000);
+  }
+  CloseHandle(g_reviewAnalyticsProcess);
+  g_reviewAnalyticsProcess = nullptr;
+}
+
+std::filesystem::path pptDesignerDirectory() {
+  const auto executable = executableDirectory();
+  const std::vector<std::filesystem::path> candidates = {
+    executable / L"도구" / L"PPT 디자이너" / L"game-ppt-designer-next",
+    executable.parent_path().parent_path().parent_path() / L"도구" / L"PPT 디자이너" / L"game-ppt-designer-next",
+    std::filesystem::current_path() / L"도구" / L"PPT 디자이너" / L"game-ppt-designer-next",
+  };
+  for (const auto& candidate : candidates) {
+    if (std::filesystem::exists(candidate / L"packages" / L"studio-integration" / L"src" / L"server.ts")) return candidate;
+  }
+  return {};
+}
+
+void startPptDesignerServer() {
+  const auto programDirectory = pptDesignerDirectory();
+  if (programDirectory.empty()) return;
+  const auto tsx = programDirectory / L"node_modules" / L"tsx" / L"dist" / L"cli.mjs";
+  const auto server = programDirectory / L"packages" / L"studio-integration" / L"src" / L"server.ts";
+  if (!std::filesystem::exists(tsx)) return;
+  const std::wstring commandLine = L"node.exe \"" + tsx.wstring() + L"\" \"" + server.wstring() + L"\"";
+  std::vector<wchar_t> mutableCommand(commandLine.begin(), commandLine.end());
+  mutableCommand.push_back(L'\0');
+
+  std::vector<wchar_t> previousKey;
+  const DWORD previousKeyLength = GetEnvironmentVariableW(L"OPENROUTER_API_KEY", nullptr, 0);
+  const bool hadPreviousKey = previousKeyLength > 0;
+  if (hadPreviousKey) { previousKey.resize(previousKeyLength); GetEnvironmentVariableW(L"OPENROUTER_API_KEY", previousKey.data(), previousKeyLength); }
+  const std::string storedKey = g_openRouter ? OpenRouterService::readApiKey() : std::string();
+  if (!storedKey.empty()) SetEnvironmentVariableW(L"OPENROUTER_API_KEY", utf8ToWide(storedKey).c_str());
+
+  STARTUPINFOW startup{}; startup.cb = sizeof(startup);
+  PROCESS_INFORMATION process{};
+  const bool created = CreateProcessW(nullptr, mutableCommand.data(), nullptr, nullptr, FALSE,
+    CREATE_NO_WINDOW | CREATE_UNICODE_ENVIRONMENT, nullptr, programDirectory.c_str(), &startup, &process) != FALSE;
+  if (hadPreviousKey) SetEnvironmentVariableW(L"OPENROUTER_API_KEY", previousKey.data());
+  else SetEnvironmentVariableW(L"OPENROUTER_API_KEY", nullptr);
+  if (!created) return;
+  CloseHandle(process.hThread);
+  g_pptDesignerProcess = process.hProcess;
+}
+
+void stopPptDesignerServer() {
+  if (!g_pptDesignerProcess) return;
+  if (WaitForSingleObject(g_pptDesignerProcess, 0) == WAIT_TIMEOUT) {
+    TerminateProcess(g_pptDesignerProcess, 0);
+    WaitForSingleObject(g_pptDesignerProcess, 1000);
+  }
+  CloseHandle(g_pptDesignerProcess);
+  g_pptDesignerProcess = nullptr;
 }
 
 std::filesystem::path resolveUiDirectory() {
@@ -115,7 +245,7 @@ void hideMainWindow() {
   if (!g_closeNoticeShown) {
     g_closeNoticeShown = true;
     g_trayIcon.uFlags |= NIF_INFO;
-    wcscpy_s(g_trayIcon.szInfoTitle, L"게임기획 스튜디오");
+    wcscpy_s(g_trayIcon.szInfoTitle, L"도구 보관함");
     wcscpy_s(g_trayIcon.szInfo, L"프로그램은 트레이에서 계속 실행됩니다.");
     g_trayIcon.dwInfoFlags = NIIF_INFO;
     Shell_NotifyIconW(NIM_MODIFY, &g_trayIcon);
@@ -153,7 +283,7 @@ void showTrayMenu() {
   POINT point{};
   GetCursorPos(&point);
   HMENU menu = CreatePopupMenu();
-  AppendMenuW(menu, MF_STRING | MF_DEFAULT, kTrayOpen, L"게임기획 스튜디오 열기");
+  AppendMenuW(menu, MF_STRING | MF_DEFAULT, kTrayOpen, L"도구 보관함 열기");
   AppendMenuW(menu, MF_SEPARATOR, 0, nullptr);
   AppendMenuW(menu, MF_STRING, kTrayQuit, L"완전 종료");
   SetForegroundWindow(g_window);
@@ -235,7 +365,15 @@ void handleWebMessage(ICoreWebView2WebMessageReceivedEventArgs* args) {
         }
         auto* payload = new json(std::move(response));
         if (!PostMessageW(g_window, kAsyncJsonMessage, 0, reinterpret_cast<LPARAM>(payload))) delete payload;
+        if (command.value("type", "") == "ai:keySave" || command.value("type", "") == "ai:keyDelete") {
+          PostMessageW(g_window, kRestartReviewServerMessage, 0, 0);
+        }
       }).detach();
+      return;
+    }
+
+    if (type.rfind("downloads:", 0) == 0) {
+      postJson(g_downloads->handleCommand(command));
       return;
     }
 
@@ -284,6 +422,56 @@ LRESULT resizeBorderHitTest(HWND window, LPARAM lParam) {
   if (top) return HTTOP;
   if (bottom) return HTBOTTOM;
   return HTCLIENT;
+}
+
+// ── WebView2 런타임 확인 ────────────────────────────────────────
+// 화면은 WebView2로 그린다. Windows 11과 업데이트된 Windows 10에는 이미 있지만, 없는 PC에서는 한 번 설치한다.
+bool webView2Installed() {
+  LPWSTR version = nullptr;
+  const HRESULT result = GetAvailableCoreWebView2BrowserVersionString(nullptr, &version);
+  const bool installed = SUCCEEDED(result) && version != nullptr;
+  if (version) CoTaskMemFree(version);
+  return installed;
+}
+
+bool ensureWebView2Runtime() {
+  if (webView2Installed()) return true;
+
+  // 1) 프로그램 폴더에 넣어 둔 마이크로소프트 설치 파일(부트스트래퍼)이 있으면 그걸 실행한다.
+  const auto executable = executableDirectory();
+  const std::filesystem::path candidates[] = {
+    executable / L"게임기획 스튜디오" / L"redist" / L"MicrosoftEdgeWebview2Setup.exe",
+    executable / L"redist" / L"MicrosoftEdgeWebview2Setup.exe",
+  };
+  for (const auto& setup : candidates) {
+    if (!std::filesystem::exists(setup)) continue;
+    if (MessageBoxW(nullptr,
+          L"화면을 그리는 윈도우 부품(WebView2)이 없어 지금 설치합니다.\n인터넷 연결이 필요하고 1~2분 걸립니다.",
+          kWindowTitle, MB_OKCANCEL | MB_ICONINFORMATION) != IDOK) {
+      return false;
+    }
+    SHELLEXECUTEINFOW info{};
+    info.cbSize = sizeof(info);
+    info.fMask = SEE_MASK_NOCLOSEPROCESS;
+    info.lpVerb = L"open";
+    info.lpFile = setup.c_str();
+    info.lpParameters = L"/silent /install";
+    info.nShow = SW_SHOWNORMAL;
+    if (ShellExecuteExW(&info) && info.hProcess) {
+      WaitForSingleObject(info.hProcess, INFINITE);
+      CloseHandle(info.hProcess);
+    }
+    if (webView2Installed()) return true;
+    break;
+  }
+
+  // 2) 설치 파일이 없거나 설치에 실패하면 공식 설치 파일을 받을 수 있게 안내한다.
+  if (MessageBoxW(nullptr,
+        L"화면을 그리는 윈도우 부품(WebView2)이 설치되어 있지 않습니다.\n마이크로소프트 설치 파일을 받을까요? 설치한 뒤 프로그램을 다시 실행하세요.",
+        kWindowTitle, MB_YESNO | MB_ICONWARNING) == IDYES) {
+    ShellExecuteW(nullptr, L"open", L"https://go.microsoft.com/fwlink/p/?LinkId=2124703", nullptr, nullptr, SW_SHOWNORMAL);
+  }
+  return false;
 }
 
 void initializeWebView() {
@@ -345,6 +533,49 @@ void initializeWebView() {
                 ).Get(),
                 &messageToken
               );
+
+              // 받은 파일을 기록한다. WebView2 기본 다운로드 창은 잠깐 떴다 사라지므로 스튜디오에서 다시 볼 수 있게 한다.
+              ComPtr<ICoreWebView2_4> webView4;
+              if (SUCCEEDED(g_webView.As(&webView4)) && webView4) {
+                EventRegistrationToken downloadToken{};
+                webView4->add_DownloadStarting(
+                  Callback<ICoreWebView2DownloadStartingEventHandler>(
+                    [](ICoreWebView2*, ICoreWebView2DownloadStartingEventArgs* args) -> HRESULT {
+                      ComPtr<ICoreWebView2DownloadOperation> operation;
+                      if (FAILED(args->get_DownloadOperation(&operation)) || !operation || !g_downloads) return S_OK;
+                      LPWSTR path = nullptr;
+                      args->get_ResultFilePath(&path);
+                      LPWSTR uri = nullptr;
+                      operation->get_Uri(&uri);
+                      INT64 total = 0;
+                      operation->get_TotalBytesToReceive(&total);
+                      const std::string id = g_downloads->begin(path ? path : L"", uri ? uri : L"", total);
+                      if (path) CoTaskMemFree(path);
+                      if (uri) CoTaskMemFree(uri);
+                      postJson(g_downloads->listMessage(""));
+
+                      EventRegistrationToken stateToken{};
+                      operation->add_StateChanged(
+                        Callback<ICoreWebView2StateChangedEventHandler>(
+                          [id](ICoreWebView2DownloadOperation* changed, IUnknown*) -> HRESULT {
+                            COREWEBVIEW2_DOWNLOAD_STATE state = COREWEBVIEW2_DOWNLOAD_STATE_IN_PROGRESS;
+                            changed->get_State(&state);
+                            if (state == COREWEBVIEW2_DOWNLOAD_STATE_IN_PROGRESS || !g_downloads) return S_OK;
+                            INT64 received = 0;
+                            changed->get_BytesReceived(&received);
+                            g_downloads->finish(id, state == COREWEBVIEW2_DOWNLOAD_STATE_COMPLETED ? "completed" : "interrupted", received);
+                            postJson(g_downloads->listMessage(""));
+                            return S_OK;
+                          }
+                        ).Get(),
+                        &stateToken
+                      );
+                      return S_OK;
+                    }
+                  ).Get(),
+                  &downloadToken
+                );
+              }
 
               g_webView->Navigate(L"https://studio.local/index.html");
               return S_OK;
@@ -435,6 +666,10 @@ LRESULT CALLBACK windowProcedure(HWND window, UINT message, WPARAM wParam, LPARA
       if (payload) postJson(*payload);
       return 0;
     }
+    case kRestartReviewServerMessage:
+      stopReviewAnalyticsServer();
+      startReviewAnalyticsServer();
+      return 0;
     case WM_DESTROY:
       removeTrayIcon();
       g_controller.Reset();
@@ -464,10 +699,20 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE, PWSTR, int showCommand) {
     return 0;
   }
 
+  // 화면 부품이 없으면 설치부터 한다. 설치하지 않으면 창을 띄울 수 없으므로 여기서 끝낸다.
+  if (!ensureWebView2Runtime()) {
+    if (mutex) CloseHandle(mutex);
+    CoUninitialize();
+    return 0;
+  }
+
   try {
     g_store = std::make_unique<ProjectStore>();
     g_openRouter = std::make_shared<OpenRouterService>(g_store->appDataDirectory());
     g_promptLibrary = std::make_unique<PromptLibraryStore>(g_store->appDataDirectory());
+    g_downloads = std::make_unique<DownloadHistory>(g_store->appDataDirectory());
+    startReviewAnalyticsServer();
+    startPptDesignerServer();
 
     WNDCLASSEXW windowClass{};
     windowClass.cbSize = sizeof(windowClass);
@@ -524,6 +769,8 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE, PWSTR, int showCommand) {
     removeTrayIcon();
   }
 
+  stopReviewAnalyticsServer();
+  stopPptDesignerServer();
   g_store.reset();
   g_openRouter.reset();
   g_promptLibrary.reset();

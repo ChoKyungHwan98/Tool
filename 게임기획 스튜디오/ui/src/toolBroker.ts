@@ -7,6 +7,7 @@ export interface ToolBridgeRequest {
   type: 'artifact:load' | 'artifact:save' | 'artifact:list' | 'artifact:publish'
     | 'ai:keyStatus' | 'ai:keySave' | 'ai:keyDelete' | 'ai:models' | 'ai:complete'
     | 'tableProject:list' | 'tableProject:write' | 'tableProject:trash'
+    | 'tableChat:load' | 'tableChat:save'
   requestId: string
   toolId?: string
   artifactId?: string
@@ -19,7 +20,8 @@ export interface ToolBridgeRequest {
   perRequestLimit?: number
   estimatedCost?: number
   model?: string
-  messages?: Array<{ role: 'system' | 'user'; content: string }>
+  messages?: Array<{ role: string; content: unknown; [key: string]: unknown }>
+  tools?: unknown[]
   maxTokens?: number
   temperature?: number
   projectId?: string
@@ -31,6 +33,12 @@ export function commandFromToolMessage(data: unknown, actualToolId: string): Stu
   if (!data || typeof data !== 'object') return null
   const request = data as Partial<ToolBridgeRequest>
   if (request.channel !== TOOL_BRIDGE_CHANNEL || typeof request.requestId !== 'string') return null
+
+  if (request.type === 'tableChat:load' || request.type === 'tableChat:save') {
+    if (actualToolId !== 'table-designer' || typeof request.projectId !== 'string') return null
+    if (request.type === 'tableChat:load') return { type: request.type, requestId: request.requestId, projectId: request.projectId }
+    return { type: request.type, requestId: request.requestId, projectId: request.projectId, data: request.data ?? {} }
+  }
 
   if (request.type?.startsWith('tableProject:')) {
     if (actualToolId !== 'table-designer') return null
@@ -102,6 +110,7 @@ export function commandFromToolMessage(data: unknown, actualToolId: string): Stu
     return {
       type: request.type, requestId: request.requestId, model: request.model,
       messages: request.messages, maxTokens: request.maxTokens || 1600,
+      ...(Array.isArray(request.tools) && request.tools.length > 0 ? { tools: request.tools } : {}),
       temperature: request.temperature ?? 0.2, estimatedCost: request.estimatedCost || 0,
       perRequestLimit: request.perRequestLimit ?? 0.5, monthlyLimit,
     }

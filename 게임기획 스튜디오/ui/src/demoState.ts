@@ -16,16 +16,23 @@ const tools: StudioSnapshot['availableTools'] = [
     workspace: { inputs: ['game-data'], outputs: [] },
   },
   {
-    id: 'deck-designer', name: '기획서 디자이너', shortName: '기획서',
-    description: '논리와 근거를 PPTX·Word 기획서로 구성합니다.',
-    category: '문서', status: 'ready', accent: 'violet',
+    id: 'review-analytics', name: 'AI 리뷰데이터 분석', shortName: 'AI 리뷰데이터 분석',
+    description: 'Steam 유저 리뷰를 수집·분석하고 기획 인사이트를 만듭니다.',
+    category: '데이터', status: 'ready', accent: 'cyan',
+    keywords: ['리뷰', 'Steam', '감성', '인사이트', '유저 피드백', '품질', '표본', 'AI'],
+    workspace: { inputs: [], outputs: ['review-insights'] },
+  },
+  {
+    id: 'deck-designer', name: 'PPT 디자이너', shortName: 'PPT 디자이너',
+    description: '리뷰 근거와 기획 논리를 PPTX·Word 기획서로 구성합니다.',
+    category: '문서', status: 'prototype', accent: 'violet',
     keywords: ['기획서', 'PPT', 'PPTX', 'Word', '문서'],
-    workspace: { inputs: [], outputs: [] },
+    workspace: { inputs: ['review-insights'], outputs: [] },
   },
   {
     id: 'prompt-library', name: '프롬프트 빌더', shortName: '프롬프트',
     description: 'Prombot 방식으로 프롬프트를 조합하고 프리셋을 저장합니다.',
-    category: '생산성', status: 'ready', accent: 'violet',
+    category: '생산성', status: 'prototype', accent: 'violet',
     keywords: ['프롬프트', 'Prompt', 'Prombot', '프리셋', '랜덤', '기록', 'AI', '복사'],
     workspace: { inputs: [], outputs: [] },
   },
@@ -63,7 +70,7 @@ function toolTab(toolId: string, title: string): TabState {
 export function reduceDemoState(state: StudioSnapshot, command: StudioCommand): StudioSnapshot {
   const now = new Date().toISOString();
   if (command.type === 'project:create') {
-    const id = `demo-${Date.now()}`;
+    const id = `demo-${crypto.randomUUID()}`;
     const project = {
       schemaVersion: 2,
       id,
@@ -85,6 +92,44 @@ export function reduceDemoState(state: StudioSnapshot, command: StudioCommand): 
         projects: [{ id, name: command.name, path: `${project.root}\\project.gds.json`, updatedAt: now }, ...state.registry.projects],
       },
       activeProject: project,
+    };
+  }
+
+  if (command.type === 'project:trash') {
+    const projects = state.registry.projects.filter((project) => project.id !== command.projectId);
+    const activeProject = state.activeProject?.id === command.projectId ? null : state.activeProject;
+    return {
+      ...state,
+      registry: {
+        ...state.registry,
+        projects,
+        lastProjectId: state.registry.lastProjectId === command.projectId ? projects[0]?.id ?? null : state.registry.lastProjectId,
+      },
+      activeProject,
+    };
+  }
+
+  if (command.type === 'project:activate') {
+    const summary = state.registry.projects.find((project) => project.id === command.projectId);
+    if (!summary) return state;
+    if (state.activeProject?.id === summary.id) return state;
+    const root = summary.path.replace(/[\\/][^\\/]+$/, '');
+    return {
+      ...state,
+      registry: { ...state.registry, lastProjectId: summary.id },
+      activeProject: {
+        schemaVersion: 2,
+        id: summary.id,
+        name: summary.name,
+        root,
+        createdAt: summary.updatedAt,
+        updatedAt: summary.updatedAt,
+        tools: [],
+        graph: { nodes: [], viewport: { x: 0, y: 0, zoom: 1 } },
+        connections: [],
+        tabs: [{ id: 'project-home', kind: 'project', title: '작업공간 홈', toolId: 'project', artifactId: 'home', pinned: true }],
+        activeTabId: 'project-home',
+      },
     };
   }
 

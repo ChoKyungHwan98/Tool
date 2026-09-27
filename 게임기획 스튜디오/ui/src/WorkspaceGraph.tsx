@@ -52,7 +52,9 @@ function toolById(snapshot: StudioSnapshot, toolId: string) {
 }
 
 function capabilityName(capability: string) {
-  return capability === 'game-data' ? '게임 데이터' : capability;
+  if (capability === 'game-data') return '게임 데이터';
+  if (capability === 'review-insights') return '리뷰 인사이트';
+  return capability;
 }
 
 function nodeRole(tool: ToolDefinition) {

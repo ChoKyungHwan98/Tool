@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "0.1",
+  "projectId": "project-2ce22ca8",
+  "name": "1234",
+  "createdAt": "2026-09-15T12:29:12.217Z",
+  "updatedAt": "2026-09-15T12:29:39.411Z",
+  "documents": [
+    {
+      "documentId": "document-1789475375691",
+      "title": "전투 시스템 역할 구조",
+      "mode": "document",
+      "updatedAt": "2026-09-15T12:29:39.411Z"
+    },
+    {
+      "documentId": "document-1789475366290",
+      "title": "전투 시스템 역할 구조",
+      "mode": "document",
+      "updatedAt": "2026-09-15T12:29:30.498Z"
+    }
+  ],
+  "history": [
+    {
+      "artifactId": "slide-1789475375693-f7f2ee4f",
+      "documentId": "document-1789475375691",
+      "title": "전투 시스템 역할 구조",
+      "previewPngUrl": "http://127.0.0.1:8766/api/designer/jobs/slide-1789475375693-f7f2ee4f/slide-1789475375693-f7f2ee4f.png",
+      "updatedAt": "2026-09-15T12:29:39.411Z"
+    },
+    {
+      "artifactId": "slide-1789475366293-8e7039ba",
+      "documentId": "document-1789475366290",
+      "title": "전투 시스템 역할 구조",
+      "previewPngUrl": "http://127.0.0.1:8766/api/designer/jobs/slide-1789475366293-8e7039ba/slide-1789475366293-8e7039ba.png",
+      "updatedAt": "2026-09-15T12:29:30.498Z"
+    }
+  ]
+}

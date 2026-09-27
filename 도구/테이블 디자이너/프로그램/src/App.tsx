@@ -12,6 +12,8 @@ import { ProjectExplorer } from './presentation/components/ProjectExplorer'
 import { SchemaCanvas } from './presentation/components/SchemaCanvas'
 import { TableDesignerView } from './presentation/components/TableDesignerView'
 import { TopBar } from './presentation/components/TopBar'
+import { installChatPersistence } from './presentation/state/chatPersistence'
+import { installScreenHistory } from './presentation/state/screenHistory'
 import { useWorkbenchStore } from './presentation/state/workbenchStore'
 
 function isNativeTextEditingTarget(target: EventTarget | null) {
@@ -39,6 +41,11 @@ function App() {
   useEffect(() => {
     void initializeProjectLibrary()
   }, [initializeProjectLibrary])
+
+  // 마우스 사이드 버튼 앞뒤 이동 + 스튜디오 상단 뒤로가기 요청 응답
+  useEffect(() => installScreenHistory(), [])
+  // AI 대화를 프로젝트마다 저장하고 다시 열 때 불러온다
+  useEffect(() => installChatPersistence(), [])
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {

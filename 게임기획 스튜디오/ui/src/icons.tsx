@@ -5,7 +5,7 @@ export type IconName =
   | 'connections' | 'settings' | 'search' | 'panel' | 'close' | 'folder'
   | 'clock' | 'arrow' | 'check' | 'grid' | 'more' | 'pin' | 'tray'
   | 'focus' | 'warning' | 'spark' | 'back' | 'menu' | 'chevron' | 'prompt' | 'copy' | 'save'
-  | 'layout' | 'edges' | 'map' | 'undo' | 'dots';
+  | 'layout' | 'edges' | 'map' | 'undo' | 'dots' | 'trash' | 'download';
 
 export function Icon({ name, ...props }: SVGProps<SVGSVGElement> & { name: IconName }) {
   const common = { fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const };
@@ -44,6 +44,8 @@ export function Icon({ name, ...props }: SVGProps<SVGSVGElement> & { name: IconN
     case 'map': content = <><path d="m3.5 5.5 5-2 7 2 5-2v15l-5 2-7-2-5 2z"/><path d="M8.5 3.5v15M15.5 5.5v15"/></>; break;
     case 'undo': content = <><path d="M8 7H4v-4"/><path d="M4.5 7.5A8 8 0 1 1 5 17"/></>; break;
     case 'dots': content = <><circle cx="6" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="12" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="18" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="6" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="18" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="6" cy="18" r="1" fill="currentColor" stroke="none"/><circle cx="12" cy="18" r="1" fill="currentColor" stroke="none"/><circle cx="18" cy="18" r="1" fill="currentColor" stroke="none"/></>; break;
+    case 'trash': content = <><path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5M14 11v5"/></>; break;
+    case 'download': content = <><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5"/><path d="M5 19.5h14"/></>; break;
   }
   return <svg viewBox="0 0 24 24" aria-hidden="true" {...common} {...props}>{content}</svg>;
 }
@@ -51,6 +53,7 @@ export function Icon({ name, ...props }: SVGProps<SVGSVGElement> & { name: IconN
 export function toolIconName(toolId: string): IconName {
   if (toolId === 'table-designer') return 'database';
   if (toolId === 'pattern-designer') return 'pattern';
+  if (toolId === 'review-analytics') return 'spark';
   if (toolId === 'deck-designer') return 'document';
   if (toolId === 'prompt-library') return 'prompt';
   return 'grid';

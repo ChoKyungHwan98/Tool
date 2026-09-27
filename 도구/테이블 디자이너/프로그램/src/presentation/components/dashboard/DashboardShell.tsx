@@ -39,7 +39,8 @@ export function DashboardShell() {
   const loadTrash = useWorkbenchStore((state) => state.loadTrash)
   const restoreProjectFromTrash = useWorkbenchStore((state) => state.restoreProjectFromTrash)
 
-  const [activeSection, setActiveSection] = useState<DashboardSection>('all')
+  const activeSection = useWorkbenchStore((state) => state.dashboardSection)
+  const setActiveSection = useWorkbenchStore((state) => state.setDashboardSection)
   const [newProjectOpen, setNewProjectOpen] = useState(false)
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const { favoriteIds, toggleFavorite } = useFavoriteProjects()
@@ -118,9 +119,6 @@ export function DashboardShell() {
       <DashboardRail
         active={activeSection}
         onSelect={selectSection}
-        totalCount={projects.length}
-        favoriteCount={favoriteIds.size}
-        trashCount={trashedProjects.length}
         onNewProject={() => { setNewProjectOpen(true); setMobileNavOpen(false) }}
         desktopRuntime={desktopRuntime}
         onOpenNativeFile={() => void openNativeProjectFile()}
@@ -132,7 +130,7 @@ export function DashboardShell() {
       <main className="dashboard-main">
         {activeSection === 'all' && (
           <ProjectListPanel
-            heading="내 프로젝트"
+            heading="전체 프로젝트"
             headingId="recent-projects-title"
             projects={projects}
             showControls

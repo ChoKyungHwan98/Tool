@@ -7,7 +7,7 @@
 - frontend-dev Skill source: https://github.com/MiniMax-AI/skills/blob/main/skills/frontend-dev/SKILL.md
 - skills reviewed commit: `60aaae52bb2af8162732751a4332f62a5fef518b`
 - Both repositories are published under the MIT License by MiniMax.
-- No OpenRoom component, SCSS module, image, or application asset is copied. Public design rules were independently implemented in `ui/src/devtoys-shell.css`, `ui/src/App.tsx`, and `ui/src/toolCatalog.ts`.
+- No OpenRoom component, SCSS module, image, or application asset is copied. Public design rules were independently implemented in `ui/src/devtoys-shell.css`, `ui/src/catalog.css`, `ui/src/ToolCatalogHome.tsx`, and `ui/src/toolCatalog.ts`.
 - Decision record: `docs/MINIMAX_UI_REFERENCE_KO.md`
 
 ## Prombot / NAI Prompt Randomizer (behavior reference)
@@ -55,36 +55,15 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-## Nimbalyst desktop UI (inactive comparison file)
+## Pretendard
 
-- Source: https://github.com/nimbalyst/nimbalyst
-- Reviewed commit: `2e6237c8e8114eda32129f75df1b2a6b8aaf754c`
-- Ported sources:
-  - `packages/runtime/src/themes/builtin/dark/theme.json`
-  - `packages/electron/src/renderer/components/ProjectRail.css`
-  - `packages/electron/src/renderer/components/NavigationGutter/NavigationGutter.tsx`
-  - `packages/electron/src/renderer/components/TabManager/TabBar.tsx`
-  - `packages/electron/src/renderer/components/WindowTopBar/WindowTopBar.tsx`
-- Local derivative: `ui/src/nimbalyst-shell.css`
+- 파일: `ui/public/fonts/PretendardVariable.woff2` (스튜디오와 모든 도구가 공용으로 사용), `도구/AI 리뷰데이터 분석/프로그램/static/fonts/PretendardVariable.woff2`
+- 저작권: Copyright (c) 2021, Kil Hyung-jin (https://github.com/orioncactus/pretendard)
+- 라이선스: SIL Open Font License, Version 1.1 (https://openfontlicense.org)
+- 설치된 PretendardVariable.ttf를 woff2 형식으로만 변환했고, 글자 모양은 바꾸지 않았다. 글꼴 단독 판매는 금지된다.
 
-MIT License
+## Microsoft Edge WebView2 Runtime 설치 파일 (Evergreen Bootstrapper)
 
-Copyright (c) 2024-2026 Nimbalyst Inc.
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+- 파일: `redist/MicrosoftEdgeWebview2Setup.exe` (Microsoft 서명 확인)
+- 출처: https://go.microsoft.com/fwlink/p/?LinkId=2124703
+- 용도: WebView2가 없는 PC에서 스튜디오가 처음 실행될 때 한 번 설치한다. Microsoft의 재배포 조건에 따라 앱과 함께 배포할 수 있다.

@@ -1,0 +1,48 @@
+{
+  "name": "game-presentation-designer-next",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.19.0",
+  "scripts": {
+    "check": "tsc --noEmit && pnpm --filter @game-presentation/workbench check",
+    "test": "vitest run",
+    "verify": "pnpm check && pnpm test",
+    "proof:mec01": "tsx packages/renderer/src/proof/mec-01.ts",
+    "proof:candidates": "tsx packages/renderer/src/proof/mec-01-candidates.ts",
+    "proof:review": "tsx packages/review-surface/src/proof/mec-01.ts",
+    "proof:v1-information-flow": "tsx packages/renderer/src/proof/v1-information-flow.ts",
+    "proof:v1-mec01-render-tree": "tsx packages/renderer/src/proof/mec-01-accumulation-threshold-consequence-render-tree.ts",
+    "proof:v1-mec01-png": "tsx packages/renderer/src/proof/mec-01-accumulation-threshold-consequence-png.ts",
+    "proof:v1-mec01-polish": "tsx packages/renderer/src/proof/mec-01-layout-polish-candidates.ts",
+    "proof:v1-mec01-final-critic": "tsx packages/renderer/src/proof/mec-01-final-visual-critic.ts",
+    "proof:v1-mec01-revision-1": "tsx packages/renderer/src/proof/mec-01-partial-revision-1.ts",
+    "proof:v1-feature-spec": "tsx packages/renderer/src/proof/dodge-feature-spec.ts",
+    "proof:v1-reward-teacher-guidance": "tsx packages/renderer/src/proof/reward-feature-spec-teacher-guidance.ts",
+    "proof:v1-reward-critic-revision-1": "tsx packages/renderer/src/proof/reward-feature-spec-critic-revision-1.ts",
+    "proof:v1-organization-critic": "tsx packages/renderer/src/proof/organization-structure-visual-critic.ts",
+    "proof:v1-organization-revision-1": "tsx packages/renderer/src/proof/organization-structure-revision-1.ts",
+    "proof:v1-organization-candidates": "tsx packages/renderer/src/proof/organization-structure-candidates.ts",
+    "proof:v1-stage-8-9": "tsx packages/renderer/src/proof/organization-v1-stage-8-9.ts",
+    "proof:v1-visual-critic": "tsx packages/renderer/src/proof/v1-visual-critic.ts",
+    "proof:adapter-runtime": "tsx packages/renderer/src/proof/peft-adapter-runtime.ts",
+    "export:selected": "tsx packages/renderer/src/proof/export-selected-mec-01.ts",
+    "author:balance": "tsx packages/authoring-cli/src/main.ts",
+    "dev:workbench": "pnpm --filter @game-presentation/workbench dev",
+    "serve:studio": "tsx packages/studio-integration/src/server.ts",
+    "build:studio": "pnpm --filter @game-presentation/workbench build",
+    "build:workbench": "pnpm proof:candidates && pnpm --filter @game-presentation/workbench build"
+  },
+  "dependencies": {
+    "pdfjs-dist": "6.2.108",
+    "playwright": "1.62.1",
+    "sharp": "0.35.4",
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "26.4.0",
+    "tsx": "4.23.12",
+    "typescript": "7.0.2",
+    "vitest": "4.1.11"
+  }
+}

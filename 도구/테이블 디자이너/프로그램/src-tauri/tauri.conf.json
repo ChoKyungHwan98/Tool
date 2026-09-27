@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "Game Schema Workbench",
+        "title": "테이블 디자이너",
         "width": 1440,
         "height": 920,
         "resizable": true,

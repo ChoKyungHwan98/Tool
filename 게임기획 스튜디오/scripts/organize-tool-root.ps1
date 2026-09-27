@@ -5,7 +5,7 @@
 $ErrorActionPreference = 'Stop'
 
 $studioRoot = Split-Path -Parent $PSScriptRoot
-$toolRoot = Split-Path -Parent $studioRoot
+$toolRoot = $studioRoot
 $toolsRoot = Join-Path $toolRoot '도구'
 
 if ((Split-Path -Leaf $studioRoot) -ne '게임기획 스튜디오') {
@@ -53,7 +53,7 @@ function Remove-ExactPath([string]$Path) {
   return $bytes
 }
 
-$toolNames = @('테이블 디자이너', '패턴 디자이너', '기획서 디자이너')
+$toolNames = @('테이블 디자이너', '패턴 디자이너', 'PPT 디자이너', 'AI 리뷰데이터 분석')
 foreach ($toolName in $toolNames) {
   $source = Join-Path $toolRoot $toolName
   $destination = Join-Path $toolsRoot $toolName
@@ -130,7 +130,7 @@ foreach ($toolName in $toolNames) {
 
 $tableRoot = if ($WhatIf) { Join-Path $toolRoot '테이블 디자이너\프로그램' } else { Join-Path $toolsRoot '테이블 디자이너\프로그램' }
 $patternRoot = if ($WhatIf) { Join-Path $toolRoot '패턴 디자이너' } else { Join-Path $toolsRoot '패턴 디자이너' }
-$deckRoot = if ($WhatIf) { Join-Path $toolRoot '기획서 디자이너' } else { Join-Path $toolsRoot '기획서 디자이너' }
+$deckRoot = if ($WhatIf) { Join-Path $toolRoot 'PPT 디자이너' } else { Join-Path $toolsRoot 'PPT 디자이너' }
 
 $cleanupTargets = @(
   (Join-Path $toolRoot '_archive'),

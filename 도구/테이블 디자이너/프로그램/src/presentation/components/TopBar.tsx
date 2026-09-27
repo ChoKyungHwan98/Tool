@@ -16,6 +16,7 @@ import {
 } from 'lucide-react'
 import { useState } from 'react'
 import { isDesktopRuntime } from '../../infrastructure/externalProjectFiles'
+import { isStudioHosted } from '../../infrastructure/studioSharedProjectRepository'
 import { useWorkbenchStore, type MainView } from '../state/workbenchStore'
 import { CommandHistoryMenu } from './CommandHistoryMenu'
 
@@ -26,6 +27,7 @@ const viewButtons: readonly { readonly id: MainView; readonly label: string; rea
 ]
 
 export function TopBar() {
+  const studioHosted = isStudioHosted()
   const project = useWorkbenchStore((state) => state.document.schema)
   const mainView = useWorkbenchStore((state) => state.mainView)
   const undoStack = useWorkbenchStore((state) => state.undoStack)
@@ -68,9 +70,12 @@ export function TopBar() {
   return (
     <header className="top-bar">
       <div className="project-context">
-        <button className="icon-button" type="button" title="내 프로젝트로" onClick={returnToDashboard}>
-          <LayoutDashboard aria-hidden="true" size={17} />
-        </button>
+        {/* 스튜디오 안에서는 스튜디오 상단의 뒤로가기가 이 역할을 한다. 단독 실행일 때만 보인다. */}
+        {!studioHosted && (
+          <button className="icon-button" type="button" title="전체 프로젝트로" onClick={returnToDashboard}>
+            <LayoutDashboard aria-hidden="true" size={17} />
+          </button>
+        )}
         <div className="project-identity">
           <input
             key={project.projectId}

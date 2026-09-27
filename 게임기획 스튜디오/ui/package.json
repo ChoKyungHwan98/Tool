@@ -5,8 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1 --port 4317",
-    "build": "vite build",
-    "check": "tsc --noEmit",
+    "guidelines:check": "node ../scripts/check-tool-guidelines.mjs",
+    "build": "npm run guidelines:check && vite build",
+    "check": "npm run guidelines:check && tsc --noEmit",
     "test": "vitest run"
   },
   "dependencies": {
@@ -22,4 +23,3 @@
     "vitest": "^4.0.18"
   }
 }
-

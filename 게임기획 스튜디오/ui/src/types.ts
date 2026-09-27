@@ -181,6 +181,7 @@ export type StudioCommand =
   | { type: 'dialog:chooseFolder' }
   | { type: 'project:create'; name: string; parentDirectory: string }
   | { type: 'project:activate'; projectId: string }
+  | { type: 'project:trash'; projectId: string }
   | { type: 'project:home' }
   | { type: 'tool:activate'; toolId: string }
   | { type: 'workspace:graphSave'; graph: WorkspaceGraphState; connections: ConnectionState[] }
@@ -194,7 +195,7 @@ export type StudioCommand =
   | { type: 'ai:keySave'; requestId: string; key: string; monthlyLimit: number }
   | { type: 'ai:keyDelete'; requestId: string; monthlyLimit: number }
   | { type: 'ai:models'; requestId: string; monthlyLimit: number }
-  | { type: 'ai:complete'; requestId: string; model: string; messages: Array<{ role: 'system' | 'user'; content: string }>; maxTokens: number; temperature: number; estimatedCost: number; perRequestLimit: number; monthlyLimit: number }
+  | { type: 'ai:complete'; requestId: string; model: string; messages: Array<{ role: string; content: unknown; [key: string]: unknown }>; tools?: unknown[]; maxTokens: number; temperature: number; estimatedCost: number; perRequestLimit: number; monthlyLimit: number }
   | { type: 'prompt:getState'; requestId: string }
   | { type: 'prompt:save'; requestId: string; prompt: Partial<SavedPrompt> }
   | { type: 'prompt:delete'; requestId: string; promptId: string }
@@ -204,6 +205,10 @@ export type StudioCommand =
   | { type: 'tableProject:list'; requestId: string }
   | { type: 'tableProject:write'; requestId: string; projectId: string; name: string; serializedDocument: string }
   | { type: 'tableProject:trash'; requestId: string; projectId: string }
+  | { type: 'tableChat:load'; requestId: string; projectId: string }
+  | { type: 'tableChat:save'; requestId: string; projectId: string; data: unknown }
+  | { type: 'downloads:list' | 'downloads:clear'; requestId: string }
+  | { type: 'downloads:open' | 'downloads:reveal' | 'downloads:remove'; requestId: string; id: string }
   | { type: 'window:startDrag' }
   | { type: 'window:minimize' }
   | { type: 'window:toggleMaximize' }
@@ -225,4 +230,21 @@ export type HostMessage =
   | { type: 'tableProject:records'; requestId: string; records: TableProjectRecord[] }
   | { type: 'tableProject:written'; requestId: string; record: TableProjectRecord }
   | { type: 'tableProject:trashed'; requestId: string; projectId: string }
+  | { type: 'tableChat:data'; requestId: string; data: unknown }
+  | { type: 'tableChat:saved'; requestId: string }
+  | { type: 'downloads:list'; requestId: string; items: DownloadRecord[] }
   | { type: 'app:error'; message: string };
+
+/** 스튜디오 안에서 받은 파일 기록 (native/DownloadHistory). */
+export interface DownloadRecord {
+  id: string;
+  name: string;
+  path: string;
+  source: string;
+  totalBytes: number;
+  receivedBytes: number;
+  state: 'in_progress' | 'completed' | 'interrupted';
+  startedAt: string;
+  finishedAt: string | null;
+  exists: boolean;
+}

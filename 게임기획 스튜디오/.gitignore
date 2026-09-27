@@ -1,9 +1,23 @@
+# 설치물·빌드 산출물 — 언제든 다시 만들 수 있으므로 이력에 남기지 않는다.
+node_modules/
 build/
-ui/node_modules/
-ui/dist/
-*.user
-*.suo
-*.VC.db
-*.VC.VC.opendb
-.vs/
+dist/
+dist-studio/
+.vite/
+*.tsbuildinfo
 
+# 실행 중 생성되는 배포 UI. ui/dist에서 복사되므로 원본만 관리한다.
+app/assets/ui/
+
+# 비밀은 절대 커밋하지 않는다. Windows 자격 증명 관리자나 .env를 쓴다.
+.env
+.env.*
+!.env.example
+
+# 도구가 만드는 결과물과 임시 파일
+qa-output/
+*.log
+
+# OS
+Thumbs.db
+desktop.ini

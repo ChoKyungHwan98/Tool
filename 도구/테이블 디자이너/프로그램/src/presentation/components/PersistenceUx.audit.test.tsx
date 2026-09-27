@@ -20,7 +20,7 @@ describe('Gate 0 저장·대시보드 UI 감사', () => {
   it('대시보드에서 사용자 프로젝트와 예제 프로젝트를 분리한다', async () => {
     useWorkbenchStore.setState({ appView: 'dashboard', projects: [], currentProjectId: null })
     render(<Dashboard />)
-    expect(screen.getByRole('heading', { name: '내 프로젝트' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: '전체 프로젝트' })).toBeInTheDocument()
     await userEvent.click(screen.getByRole('button', { name: '예제' }))
     expect(screen.getByRole('heading', { name: '예제 프로젝트' })).toBeInTheDocument()
   })

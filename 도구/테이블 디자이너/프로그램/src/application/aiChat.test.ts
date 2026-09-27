@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest'
 import { createEmptyProject } from '../domain/emptyProject'
 import { crowdProject } from '../domain/sampleProject'
-import { buildChatRequestMessages, buildChatSystemPrompt, requestChatCompletion, type AiChatMessage } from './aiChat'
+import {
+  buildChatRequestMessages,
+  buildChatSystemPrompt,
+  MAX_HISTORY_MESSAGE_CHARS,
+  MAX_PROMPT_CHARS,
+  requestChatCompletion,
+  type AiChatMessage,
+} from './aiChat'
 import { defaultOpenRouterSettings } from './openRouterProvider'
 
 function createFetchStub(completionContent: string) {
@@ -244,5 +251,36 @@ describe('requestChatCompletion', () => {
       },
       fetchImpl,
     })).rejects.toThrow('행 데이터를 함께 보낼 수 없습니다')
+  })
+})
+
+describe('토큰 과사용 방지', () => {
+  it('긴 이전 답변은 잘라서 보내고 지금 질문은 남긴다', () => {
+    const long = '가'.repeat(MAX_HISTORY_MESSAGE_CHARS * 3)
+    const thread: AiChatMessage[] = [
+      { role: 'user', content: '몬스터 표 만들어줘' },
+      { role: 'assistant', content: long },
+      { role: 'user', content: '이제 아이템 표도' },
+    ]
+    const messages = buildChatRequestMessages('시스템', thread)
+    expect(messages[2].content.length).toBeLessThan(MAX_HISTORY_MESSAGE_CHARS + 20)
+    expect(messages.at(-1)?.content).toBe('이제 아이템 표도')
+  })
+
+  it('대화가 아무리 길어도 전체 글자 상한을 넘지 않는다', () => {
+    const thread: AiChatMessage[] = Array.from({ length: 200 }, (_, index) => ({
+      role: index % 2 === 0 ? 'user' as const : 'assistant' as const,
+      content: `${index} ${'나'.repeat(1400)}`,
+    }))
+    const messages = buildChatRequestMessages('시스템', thread)
+    const total = messages.reduce((sum, message) => sum + message.content.length, 0)
+    expect(total).toBeLessThanOrEqual(MAX_PROMPT_CHARS)
+    expect(messages.at(-1)?.content.startsWith('199 ')).toBe(true)
+  })
+
+  it('답변 길이 상한(max_tokens)을 요청에 넣는다', async () => {
+    const { fetchImpl, bodies } = createFetchStub('좋아요')
+    await requestChatCompletion({ messages: [{ role: 'user', content: '안녕' }], settings: defaultOpenRouterSettings, fetchImpl })
+    expect(JSON.parse(bodies.at(-1) ?? '{}').max_tokens).toBeGreaterThan(0)
   })
 })

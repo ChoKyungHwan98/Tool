@@ -102,6 +102,15 @@ int main() {
       });
       shared = tableStore.handleCommand({{"type", "tableProject:list"}, {"requestId", "list-3"}});
       require(shared["records"].size() == 1, "Trashed table project remained in the shared list.");
+
+      const auto emptyChat = tableStore.handleCommand({{"type", "tableChat:load"}, {"requestId", "chat-0"}, {"projectId", "table-project-two"}});
+      require(emptyChat["data"].is_null(), "A project without chats returned chat data.");
+      tableStore.handleCommand({
+        {"type", "tableChat:save"}, {"requestId", "chat-1"}, {"projectId", "table-project-two"},
+        {"data", {{"version", 1}, {"conversations", json::array({{{"id", "c1"}, {"title", "몬스터 표"}}})}}}
+      });
+      const auto savedChat = tableStore.handleCommand({{"type", "tableChat:load"}, {"requestId", "chat-2"}, {"projectId", "table-project-two"}});
+      require(savedChat["data"]["conversations"][0]["title"] == "몬스터 표", "Saved table chat was not read back.");
     }
 
     phase = "AI credential status";
@@ -239,6 +248,19 @@ int main() {
         {"record", {{"artifactId", "boss-pattern"}, {"kind", "pattern-graph"}, {"title", "보스 패턴"}}}
       });
       require(artifact["records"].size() == 1, "Published artifact catalog was not updated.");
+
+      phase = "trash project safely";
+      snapshot = store.handleCommand({
+        {"type", "project:create"},
+        {"name", "삭제 프로젝트"},
+        {"parentDirectory", wideToUtf8(projects.wstring())}
+      });
+      const std::string trashProjectId = snapshot["activeProject"]["id"].get<std::string>();
+      snapshot = store.handleCommand({{"type", "project:trash"}, {"projectId", trashProjectId}});
+      require(snapshot["registry"]["projects"].size() == 1, "Trashed project remained in registry.");
+      require(snapshot["activeProject"].is_null(), "Trashed active project remained open.");
+      require(!std::filesystem::exists(projects / L"삭제 프로젝트"), "Trashed project remained at its original path.");
+      require(std::filesystem::exists(projects / L".게임기획 스튜디오 휴지통"), "Project trash directory was not created.");
     }
 
     phase = "prepare legacy workspace migration";

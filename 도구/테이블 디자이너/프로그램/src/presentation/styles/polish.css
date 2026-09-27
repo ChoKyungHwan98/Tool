@@ -26,7 +26,7 @@ textarea {
 .schema-view-header h1,
 .designer-header h1,
 .data-header h1 {
-  font-size: 19px;
+  font-size: 20px;
   line-height: 1.25;
 }
 
@@ -70,7 +70,7 @@ textarea {
 .field-label,
 .column-facts dt,
 .form-hint {
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .workspace-grid {
@@ -127,7 +127,7 @@ textarea {
   color: #2f4359;
   font: inherit;
   font-size: 12px;
-  font-weight: 650;
+  font-weight: 600;
   text-align: left;
   cursor: pointer;
 }
@@ -149,8 +149,8 @@ textarea {
   padding: 7px 9px 4px;
   border-top: 1px solid #e4e9ee;
   color: #718095;
-  font-size: 11px;
-  font-weight: 750;
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .column-menu-group-title:first-child {
@@ -161,12 +161,12 @@ textarea {
 .schema-node-title strong,
 .schema-node-summary,
 .schema-node-column {
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .schema-node-title span,
 .schema-node-more {
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .schema-node-title strong {
@@ -215,7 +215,7 @@ textarea {
 
 @media (min-width: 1280px) and (max-width: 1350px) {
   .top-bar {
-    grid-template-columns: minmax(190px, 0.6fr) auto minmax(390px, 1fr);
+    grid-template-columns: minmax(190px, 1fr) auto minmax(390px, 1fr);
     gap: 8px;
   }
 
@@ -415,7 +415,7 @@ textarea {
   border-radius: 4px;
   background: transparent;
   color: #597084;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .save-indicator--dirty { color: #9a6400; }

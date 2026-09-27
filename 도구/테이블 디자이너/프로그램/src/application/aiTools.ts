@@ -7,7 +7,7 @@ import {
 import { makeId } from '../domain/ids'
 import { createColumn, createRelation, createTable as createSchemaTable } from '../domain/schemaFactories'
 import { generateRows, type RowFieldSpec, type RowGenerationSpec } from './rowGeneration'
-import type { ColumnDataType, DataRow, DataTypeKind, RowsByTable, SchemaProject, SchemaTable } from '../domain/schema'
+import type { ColumnDataType, DataRow, DataTypeKind, RowsByTable, SchemaProject, SchemaTable, ValidationRule } from '../domain/schema'
 
 /** AI가 지정할 수 있는 스칼라 타입만 허용한다. enum/list는 추가 문맥이 필요해 제외. */
 const ALLOWED_DATA_TYPES = ['string', 'int32', 'int64', 'float', 'double', 'boolean', 'date', 'datetime'] as const
@@ -47,11 +47,12 @@ export const AI_SCHEMA_TOOLS = [
     type: 'function',
     function: {
       name: 'create_table',
-      description: '새 테이블을 만든다. 사용자가 승인해야 실제로 적용된다. 기본키로 쓸 컬럼은 primaryKey를 true로 표시한다.',
+      description: '새 테이블을 만든다. 사용자가 승인해야 실제로 적용된다. 첫 컬럼은 ID(PK)로 두고 primaryKey를 true로 표시한다.',
       parameters: {
         type: 'object',
         properties: {
-          name: { type: 'string', description: '테이블 이름. 영문 파스칼케이스 권장 (예: ItemMaster)' },
+          name: { type: 'string', description: '테이블 영문 이름. 프로젝트의 기존 이름 형식을 따른다(없으면 snake_case, 예: item_master)' },
+          displayName: { type: 'string', description: '테이블 한글 이름 (예: 아이템)' },
           description: { type: 'string', description: '이 테이블이 무엇을 담는지 한국어 한 줄 설명' },
           columns: {
             type: 'array',
@@ -59,10 +60,14 @@ export const AI_SCHEMA_TOOLS = [
             items: {
               type: 'object',
               properties: {
-                name: { type: 'string' },
+                name: { type: 'string', description: '영문 컬럼 이름 (snake_case)' },
+                displayName: { type: 'string', description: '한글 컬럼 이름' },
+                description: { type: 'string', description: '이 값이 무엇인지 한 줄 설명' },
                 dataType: { type: 'string', enum: [...ALLOWED_DATA_TYPES] },
                 nullable: { type: 'boolean' },
                 primaryKey: { type: 'boolean' },
+                min: { type: 'number', description: '숫자 컬럼의 최소값' },
+                max: { type: 'number', description: '숫자 컬럼의 최대값' },
               },
               required: ['name', 'dataType'],
             },
@@ -81,9 +86,13 @@ export const AI_SCHEMA_TOOLS = [
         type: 'object',
         properties: {
           tableName: { type: 'string' },
-          name: { type: 'string' },
+          name: { type: 'string', description: '영문 컬럼 이름 (snake_case)' },
+          displayName: { type: 'string', description: '한글 컬럼 이름' },
+          description: { type: 'string', description: '이 값이 무엇인지 한 줄 설명' },
           dataType: { type: 'string', enum: [...ALLOWED_DATA_TYPES] },
           nullable: { type: 'boolean' },
+          min: { type: 'number', description: '숫자 컬럼의 최소값' },
+          max: { type: 'number', description: '숫자 컬럼의 최대값' },
         },
         required: ['tableName', 'name', 'dataType'],
       },
@@ -151,6 +160,26 @@ export const AI_SCHEMA_TOOLS = [
   },
 ] as const
 
+/** AI가 준 한글 이름·설명·최소/최대값을 컬럼 정보로 옮긴다. 최소/최대는 검사 규칙이 된다. */
+function columnDetails(input: Record<string, unknown>): {
+  readonly displayName?: string
+  readonly description?: string
+  readonly validationRules?: readonly ValidationRule[]
+} {
+  const text = (value: unknown) => typeof value === 'string' && value.trim() ? value.trim() : undefined
+  const number = (value: unknown) => typeof value === 'number' && Number.isFinite(value) ? value : undefined
+  const min = number(input.min)
+  const max = number(input.max)
+  const rules: ValidationRule[] = []
+  if (min !== undefined) rules.push({ ruleId: makeId('rule'), kind: 'min', value: min, message: `${min} 이상이어야 합니다.` })
+  if (max !== undefined) rules.push({ ruleId: makeId('rule'), kind: 'max', value: max, message: `${max} 이하여야 합니다.` })
+  return {
+    displayName: text(input.displayName),
+    description: text(input.description),
+    ...(rules.length > 0 ? { validationRules: rules } : {}),
+  }
+}
+
 function findTableByName(project: SchemaProject, name: string): SchemaTable | undefined {
   const normalized = name.trim().toLocaleLowerCase()
   return project.tables.find((table) => table.name.toLocaleLowerCase() === normalized)
@@ -202,6 +231,7 @@ function buildCreateTable(schema: SchemaProject, args: Record<string, unknown>):
     return [{
       columnId,
       name: columnName,
+      ...columnDetails(input),
       dataType,
       nullable: input.primaryKey === true ? false : input.nullable !== false,
     }]
@@ -211,13 +241,19 @@ function buildCreateTable(schema: SchemaProject, args: Record<string, unknown>):
 
   // 기본키 표시가 없으면 첫 컬럼을 기본키로 삼는다.
   const resolvedPrimaryKeys = primaryKeyColumnIds.length > 0 ? primaryKeyColumnIds : [columns[0]!.columnId]
+  // 실무 규칙: 테이블의 첫 컬럼은 Index(ID). PK 컬럼을 맨 앞으로 옮긴다.
+  const orderedColumns = [
+    ...columns.filter((column) => resolvedPrimaryKeys.includes(column.columnId)),
+    ...columns.filter((column) => !resolvedPrimaryKeys.includes(column.columnId)),
+  ]
   const index = schema.tables.length
 
   const table = createSchemaTable({
     tableId,
     name,
+    displayName: typeof args.displayName === 'string' && args.displayName.trim() ? args.displayName.trim() : undefined,
     description: typeof args.description === 'string' ? args.description : undefined,
-    columns,
+    columns: orderedColumns,
     primaryKeyColumnIds: resolvedPrimaryKeys,
   })
 
@@ -253,6 +289,7 @@ function buildAddColumn(schema: SchemaProject, args: Record<string, unknown>): {
   const column = createColumn({
     tableId: table.tableId,
     name,
+    ...columnDetails(args),
     dataType,
     nullable: args.nullable !== false,
   })

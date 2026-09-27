@@ -29,7 +29,7 @@
   gap: 16px;
   color: var(--app-muted);
   font-size: 13px;
-  font-weight: 650;
+  font-weight: 600;
   white-space: nowrap;
 }
 
@@ -225,7 +225,7 @@
   border-bottom: 1px solid var(--app-border-soft);
   color: #253247;
   font-weight: 700;
-  font-size: 13.5px;
+  font-size: 14px;
 }
 
 .tree-section,
@@ -272,7 +272,7 @@
   grid-template-columns: 16px minmax(0, 1fr) auto;
   min-height: 34px;
   padding: 7px 9px;
-  font-weight: 560;
+  font-weight: 600;
 }
 
 .tree-row span,
@@ -287,7 +287,7 @@
 .column-row small,
 .schema-node-column small {
   color: var(--app-muted);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .tree-row.selected,
@@ -343,8 +343,8 @@ button.readonly-row:hover {
 .view-header p {
   margin: 4px 0 0;
   color: var(--app-muted);
-  font-size: 12.5px;
-  font-weight: 560;
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .header-actions {
@@ -367,7 +367,7 @@ button.readonly-row:hover {
   border-radius: 6px;
   background: var(--app-panel-strong);
   color: #274258;
-  font-size: 12.5px;
+  font-size: 13px;
   font-weight: 700;
   cursor: pointer;
   box-shadow: 0 1px 1px rgba(15, 23, 42, 0.04);
@@ -400,7 +400,7 @@ button.readonly-row:hover {
   gap: 8px;
   color: #455971;
   font-size: 12px;
-  font-weight: 650;
+  font-weight: 600;
 }
 
 .legend-strip span {
@@ -476,8 +476,8 @@ button.readonly-row:hover {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 11.5px;
-  font-weight: 800;
+  font-size: 12px;
+  font-weight: 700;
   cursor: text;
 }
 
@@ -488,7 +488,7 @@ button.readonly-row:hover {
   border-radius: 2px;
   background: rgba(255, 255, 255, 0.2);
   color: #ffffff;
-  font-size: 11px;
+  font-size: 12px;
   line-height: 15px;
   padding: 0 4px;
   text-overflow: ellipsis;
@@ -504,7 +504,7 @@ button.readonly-row:hover {
   border-radius: 3px;
   background: rgba(255, 255, 255, 0.95);
   color: #16202e;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   padding: 0 5px;
 }
@@ -527,7 +527,7 @@ button.readonly-row:hover {
   border: 0;
   color: #1f2f45;
   font: inherit;
-  font-size: 11px;
+  font-size: 12px;
   text-align: left;
   cursor: pointer;
 }
@@ -554,7 +554,7 @@ button.readonly-row:hover {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-weight: 750;
+  font-weight: 700;
 }
 
 .schema-column-input {
@@ -565,7 +565,7 @@ button.readonly-row:hover {
   border-radius: 3px;
   background: #ffffff;
   color: #16202e;
-  font-size: 11px;
+  font-size: 12px;
   padding: 0 4px;
 }
 
@@ -591,9 +591,9 @@ button.readonly-row:hover {
   height: 14px;
   border-radius: 3px;
   color: #ffffff;
-  font-size: 11px;
+  font-size: 12px;
   font-style: normal;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1;
   cursor: default;
 }
@@ -663,7 +663,7 @@ button.readonly-row:hover {
   border-top: 1px solid var(--app-border);
   background: #f4f8fb;
   color: var(--app-primary);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   cursor: pointer;
 }
@@ -690,7 +690,7 @@ button.readonly-row:hover {
   border-radius: 6px;
   background: rgba(255, 255, 255, 0.94);
   color: #243244;
-  font-size: 11.5px;
+  font-size: 12px;
   box-shadow: var(--shadow-soft);
   pointer-events: none;
 }
@@ -698,7 +698,7 @@ button.readonly-row:hover {
 .schema-reference-panel strong {
   display: block;
   margin-bottom: 7px;
-  font-size: 12.5px;
+  font-size: 13px;
 }
 
 .schema-reference-panel p {
@@ -750,7 +750,7 @@ button.readonly-row:hover {
   width: 100%;
   min-width: 720px;
   border-collapse: collapse;
-  font-size: 13.5px;
+  font-size: 14px;
 }
 
 .data-grid th,
@@ -772,7 +772,7 @@ button.readonly-row:hover {
   z-index: 1;
   background: #edf4fa;
   color: #203049;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .data-grid tbody tr:nth-child(even) td {

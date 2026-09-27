@@ -46,9 +46,9 @@ const assertZipDownload = async (extension) => {
 
 try {
   await page.goto(url, { waitUntil: 'networkidle' });
-  const frameElement = page.locator('iframe[title="기획서 디자이너"]');
+  const frameElement = page.locator('iframe[title="PPT 디자이너"]');
   await frameElement.waitFor({ state: 'visible' });
-  const frame = page.frameLocator('iframe[title="기획서 디자이너"]');
+  const frame = page.frameLocator('iframe[title="PPT 디자이너"]');
 
   await frame.getByRole('heading', { name: '논리부터 레이아웃까지 한 흐름으로 설계합니다.' }).waitFor({ state: 'visible' });
   if (screenshotPath) {

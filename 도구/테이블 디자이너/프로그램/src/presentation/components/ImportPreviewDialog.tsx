@@ -1,6 +1,7 @@
 import { AlertCircle, Check, FileSpreadsheet, KeyRound, Link2, X } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import type { EntityId } from '../../domain/schema'
+import { readFirstColumnPrimaryKey, writeFirstColumnPrimaryKey } from '../state/preferences'
 import { useWorkbenchStore } from '../state/workbenchStore'
 
 export function ImportPreviewDialog() {
@@ -13,6 +14,18 @@ export function ImportPreviewDialog() {
   const [tableNames, setTableNames] = useState<Record<EntityId, string>>({})
   const [primaryKeys, setPrimaryKeys] = useState<Record<EntityId, readonly EntityId[]>>({})
   const [approvedRelations, setApprovedRelations] = useState<ReadonlySet<EntityId>>(new Set())
+  const [firstColumnPk, setFirstColumnPk] = useState(readFirstColumnPrimaryKey)
+
+  // 켜면 모든 표의 PK를 첫 열로, 끄면 자동 추정값으로 되돌린다.
+  const toggleFirstColumnPk = (on: boolean) => {
+    setFirstColumnPk(on)
+    writeFirstColumnPrimaryKey(on)
+    if (!preview) return
+    setPrimaryKeys(Object.fromEntries(preview.tables.map((table) => [
+      table.candidateId,
+      on && table.columns[0] ? [table.columns[0].columnId] : table.inferredPrimaryKeyColumnIds,
+    ])))
+  }
 
   useEffect(() => {
     if (!preview) return
@@ -34,7 +47,6 @@ export function ImportPreviewDialog() {
       <section className="import-dialog" role="dialog" aria-modal="true" aria-label="가져오기 미리보기">
         <header className="import-dialog-header">
           <div>
-            <span className="view-eyebrow">IMPORT PREVIEW</span>
             <h2>CSV·Excel 가져오기</h2>
             <p>적용 전에 시트, 헤더, 타입과 키 후보를 확인하세요.</p>
           </div>
@@ -52,6 +64,10 @@ export function ImportPreviewDialog() {
                 <strong>{preview.tables.length}개 테이블</strong>
                 <span>{preview.sources.join(', ')}</span>
                 <span>관계 후보 {preview.relationCandidates.length}개</span>
+                <label className="import-first-pk">
+                  <input type="checkbox" checked={firstColumnPk} onChange={(event) => toggleFirstColumnPk(event.target.checked)} />
+                  첫 열을 PK로
+                </label>
               </div>
               {preview.warnings.map((warning) => <div className="inline-warning" key={warning}>{warning}</div>)}
               <div className="import-table-list">

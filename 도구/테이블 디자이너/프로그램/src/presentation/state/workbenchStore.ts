@@ -25,6 +25,9 @@ import {
   type ImportSelection,
 } from '../../application/importPreview'
 import type { SchemaProposal } from '../../application/mockAiProvider'
+import type { DashboardSection } from '../components/dashboard/railItems'
+import { readFirstColumnPrimaryKey } from './preferences'
+import type { StoredConversation } from '../../infrastructure/chatHistoryStore'
 import { createEmptyProject } from '../../domain/emptyProject'
 import {
   createEmptyDataRow,
@@ -109,6 +112,8 @@ interface WorkbenchState {
   readonly mainView: MainView
   readonly bottomPanel: BottomPanel
   readonly appView: AppView
+  /** 홈에서 보고 있는 목록. 마우스 사이드 버튼 기록에 쓰려고 스토어에 둔다. */
+  readonly dashboardSection: DashboardSection
   readonly designerTab: DesignerTab
   readonly explorerCollapsed: boolean
   readonly assistantCollapsed: boolean
@@ -135,6 +140,11 @@ interface WorkbenchState {
   readonly aiStatus: 'idle' | 'running' | 'ready' | 'error'
   readonly aiError: string | null
   readonly aiMessages: readonly AiThreadMessage[]
+  /** 이 프로젝트의 저장된 대화 목록. aiMessages는 그중 열린 대화의 내용이다. */
+  readonly aiConversations: readonly StoredConversation[]
+  readonly activeConversationId: string | null
+  /** 대화 기록을 불러온 프로젝트. 다른 프로젝트 대화가 섞여 저장되지 않게 막는다. */
+  readonly aiChatLoadedFor: EntityId | null
   readonly aiPendingBatch: AiPendingBatch | null
   selectTable(tableId: EntityId): void
   selectColumn(columnId: EntityId | null): void
@@ -173,6 +183,7 @@ interface WorkbenchState {
   loadTrash(): Promise<void>
   restoreProjectFromTrash(projectId: EntityId): Promise<void>
   returnToDashboard(): Promise<void>
+  setDashboardSection(section: DashboardSection): void
   importCsvText(tableId: EntityId, csvText: string): void
   addRow(tableId: EntityId, atIndex?: number): void
   insertRowWithCells(tableId: EntityId, cells: Readonly<Record<EntityId, CellValue>>, atIndex?: number): EntityId
@@ -220,6 +231,11 @@ interface WorkbenchState {
   stageAiCommandSuggestion(): void
   appendAiMessage(role: AiThreadMessage['role'], content: string): void
   clearAiThread(): void
+  /** 지금 대화를 목록에 남기고 빈 새 대화를 연다. */
+  startNewConversation(): void
+  openConversation(conversationId: string): void
+  deleteConversation(conversationId: string): void
+  addAiTokenUsage(input: number, output: number): void
   stageAiToolBatch(plan: AiBatchPlan): void
   applyAiPendingBatch(): void
   discardAiPendingBatch(): void
@@ -299,6 +315,27 @@ function nextElkRoutesAfterCommand(
   return new Map()
 }
 
+/** 지금 대화 내용을 대화 목록에 반영한다. 열린 대화가 없으면 첫 메시지로 새 대화를 만든다. */
+function syncActiveConversation(
+  state: Pick<WorkbenchState, 'aiConversations' | 'activeConversationId'>,
+  messages: readonly AiThreadMessage[],
+  now: string,
+): Pick<WorkbenchState, 'aiConversations' | 'activeConversationId'> {
+  const firstQuestion = messages.find((message) => message.role === 'user')?.content.trim() ?? '새 대화'
+  const title = firstQuestion.length > 30 ? `${firstQuestion.slice(0, 30)}…` : firstQuestion
+  const existing = state.aiConversations.find((item) => item.id === state.activeConversationId)
+  if (existing) {
+    return {
+      activeConversationId: existing.id,
+      aiConversations: state.aiConversations.map((item) => item.id === existing.id
+        ? { ...item, title: item.title === '새 대화' ? title : item.title, messages, updatedAt: now }
+        : item),
+    }
+  }
+  const created: StoredConversation = { id: makeId('ai_chat'), title, createdAt: now, updatedAt: now, messages, tokens: { input: 0, output: 0 } }
+  return { activeConversationId: created.id, aiConversations: [created, ...state.aiConversations] }
+}
+
 export const useWorkbenchStore = create<WorkbenchState>((set, get) => ({
   document: initialDocument,
   elkRoutes: new Map(),
@@ -308,6 +345,7 @@ export const useWorkbenchStore = create<WorkbenchState>((set, get) => ({
   mainView: 'schema',
   bottomPanel: 'closed',
   appView: 'dashboard',
+  dashboardSection: 'all',
   designerTab: 'basic',
   explorerCollapsed: false,
   assistantCollapsed: false,
@@ -334,10 +372,14 @@ export const useWorkbenchStore = create<WorkbenchState>((set, get) => ({
   aiStatus: 'idle',
   aiError: null,
   aiMessages: [],
+  aiConversations: [],
+  activeConversationId: null,
+  aiChatLoadedFor: null,
   aiPendingBatch: null,
   selectTable: (tableId) => set({ selectedTableId: tableId, selectedColumnId: null }),
   selectColumn: (columnId) => set({ selectedColumnId: columnId }),
   setMainView: (view) => set({ mainView: view }),
+  setDashboardSection: (dashboardSection) => set({ dashboardSection }),
   setDesignerTab: (designerTab) => set({ designerTab }),
   setBottomPanel: (panel) => set({ bottomPanel: panel }),
   setExplorerCollapsed: (explorerCollapsed) => set({ explorerCollapsed }),
@@ -369,7 +411,7 @@ export const useWorkbenchStore = create<WorkbenchState>((set, get) => ({
 
     try {
       const sheets = await readImportFiles(files)
-      const preview = createImportPreview(sheets, get().document.schema)
+      const preview = createImportPreview(sheets, get().document.schema, { firstColumnPrimaryKey: readFirstColumnPrimaryKey() })
       set({ importPreview: preview, importStatus: 'ready' })
     } catch (error) {
       set({
@@ -437,6 +479,9 @@ export const useWorkbenchStore = create<WorkbenchState>((set, get) => ({
       aiStatus: 'idle',
       aiError: null,
       aiMessages: [],
+      aiConversations: [],
+      activeConversationId: null,
+      aiChatLoadedFor: null,
       aiPendingBatch: null,
       appView: 'workbench',
       exportOpen: false,
@@ -466,6 +511,9 @@ export const useWorkbenchStore = create<WorkbenchState>((set, get) => ({
       aiStatus: 'idle',
       aiError: null,
       aiMessages: [],
+      aiConversations: [],
+      activeConversationId: null,
+      aiChatLoadedFor: null,
       aiPendingBatch: null,
       appView: 'workbench',
       exportOpen: false,
@@ -498,6 +546,9 @@ export const useWorkbenchStore = create<WorkbenchState>((set, get) => ({
       aiStatus: 'idle',
       aiError: null,
       aiMessages: [],
+      aiConversations: [],
+      activeConversationId: null,
+      aiChatLoadedFor: null,
       aiPendingBatch: null,
       appView: 'workbench',
       exportOpen: false,
@@ -535,6 +586,9 @@ export const useWorkbenchStore = create<WorkbenchState>((set, get) => ({
       aiStatus: 'idle',
       aiError: null,
       aiMessages: [],
+      aiConversations: [],
+      activeConversationId: null,
+      aiChatLoadedFor: null,
       aiPendingBatch: null,
       appView: 'workbench',
       exportOpen: false,
@@ -1306,13 +1360,38 @@ export const useWorkbenchStore = create<WorkbenchState>((set, get) => ({
     })
     void persistCurrentProject({ checkpoint: true, recoveryDocument: state.document })
   },
-  appendAiMessage: (role, content) => set((state) => ({
-    aiMessages: [
-      ...state.aiMessages,
-      { id: makeId('ai_message'), role, content, createdAt: new Date().toISOString() },
-    ],
-  })),
+  appendAiMessage: (role, content) => set((state) => {
+    const now = new Date().toISOString()
+    const aiMessages = [...state.aiMessages, { id: makeId('ai_message'), role, content, createdAt: now }]
+    return { aiMessages, ...syncActiveConversation(state, aiMessages, now) }
+  }),
   clearAiThread: () => set({ aiMessages: [], aiProposal: null, aiError: null, aiStatus: 'idle', aiPendingBatch: null }),
+  startNewConversation: () => set({
+    aiMessages: [], activeConversationId: null,
+    aiProposal: null, aiError: null, aiStatus: 'idle', aiPendingBatch: null,
+  }),
+  openConversation: (conversationId) => set((state) => {
+    const conversation = state.aiConversations.find((item) => item.id === conversationId)
+    if (!conversation) return {}
+    return {
+      activeConversationId: conversation.id,
+      aiMessages: conversation.messages,
+      aiProposal: null, aiError: null, aiStatus: 'idle', aiPendingBatch: null,
+    }
+  }),
+  deleteConversation: (conversationId) => set((state) => {
+    const aiConversations = state.aiConversations.filter((item) => item.id !== conversationId)
+    if (state.activeConversationId !== conversationId) return { aiConversations }
+    return { aiConversations, activeConversationId: null, aiMessages: [], aiPendingBatch: null }
+  }),
+  addAiTokenUsage: (input, output) => set((state) => {
+    if (!state.activeConversationId) return {}
+    return {
+      aiConversations: state.aiConversations.map((item) => item.id === state.activeConversationId
+        ? { ...item, tokens: { input: item.tokens.input + input, output: item.tokens.output + output } }
+        : item),
+    }
+  }),
   stageAiToolBatch: (plan) => {
     if (plan.commands.length === 0 && plan.rowPlans.length === 0 && plan.issues.length === 0) {
       return
